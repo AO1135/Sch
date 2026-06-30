@@ -223,6 +223,10 @@
         </div>
       </div>
 
+      <div class="alert alert-info" style="margin-bottom:10px;">
+        📅 <strong>空いている日をタップして入力してください。</strong>もう一度タップすると未設定に戻せます。
+      </div>
+
       <div class="alert alert-info" id="input-type-info">
         <strong>通常入力：</strong>入力タイプを選んでカレンダーを押すと反映されます。もう一度押すと未設定に戻せます。
       </div>
@@ -254,7 +258,15 @@
 <div id="tab-public" class="section">
   <div class="card">
     <h2>公開カレンダー閲覧</h2>
-    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">所属グループを選択してください。</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-size:0.85rem;color:var(--muted);">① まず表示する月を選んでください</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="cal-nav-btn" onclick="changePublicMonth(-1)">◀</button>
+        <span id="public-month-label" style="font-weight:600;font-size:0.95rem;min-width:90px;text-align:center;"></span>
+        <button class="cal-nav-btn" onclick="changePublicMonth(1)">▶</button>
+      </div>
+    </div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">② 次にグループを選択してください。未回答のメンバーが確認できます。</p>
     <div id="public-group-selector" class="user-list"></div>
   </div>
 
@@ -270,11 +282,7 @@
         <div class="legend-item"><div class="legend-dot" style="background:#fecaca;border:2px solid #dc2626;"></div> 空きなし（赤）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb;border:2px solid #9ca3af;"></div> 一部空き</div>
       </div>
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="changePublicMonth(-1)">◀</button>
-        <h3 id="public-cal-title"></h3>
-        <button class="cal-nav-btn" onclick="changePublicMonth(1)">▶</button>
-      </div>
+      <div style="text-align:center;padding:6px 0 12px;font-size:0.95rem;font-weight:600;" id="public-cal-title"></div>
       <div class="cal-wrap">
         <div class="calendar" id="public-calendar"></div>
       </div>
@@ -447,7 +455,7 @@ function showTab(name, btn) {
       document.getElementById('input-area').style.display = 'none';
     }
   }
-  if (name === 'public') { renderPublicGroupOptions(); renderPublicCalendar(); }
+  if (name === 'public') { updatePublicMonthLabel(); renderPublicGroupOptions(); renderPublicCalendar(); }
   if (name === 'admin' && isAdmin) renderAdminInputTab();
   if (name === 'manage' && isAdmin) renderAdminManageTab();
 }
@@ -758,15 +766,6 @@ function renderPublicCalendar() {
   const groups = publicGroupIds.map(id => db.groups[id]).filter(Boolean);
   const members = [...new Set(groups.flatMap(g => g.members || []))];
 
-  // 回答者が1人以下の場合は公開カレンダーを非表示
-  if (members.length <= 1) {
-    area.style.display = 'block';
-    document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
-    document.getElementById('public-calendar').innerHTML = '';
-    document.getElementById('public-output-list').innerHTML =
-      '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
-    return;
-  }
   document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
   area.style.display = 'block';
   document.getElementById('public-cal-title').textContent = `${publicYear}年 ${publicMonth + 1}月`;
@@ -774,6 +773,14 @@ function renderPublicCalendar() {
   const dim = new Date(publicYear, publicMonth + 1, 0).getDate();
   const firstDay = new Date(publicYear, publicMonth, 1).getDay();
   const answeredUsers = getAnsweredUsersInMonth(members, publicYear, publicMonth);
+
+  // 実際に回答した人が1人以下の場合はカレンダーを非表示
+  if (answeredUsers.length <= 1) {
+    document.getElementById('public-calendar').innerHTML = '';
+    document.getElementById('public-output-list').innerHTML =
+      '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
+    return;
+  }
 
   const DOW = ['日','月','火','水','木','金','土'];
   let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
@@ -823,12 +830,20 @@ function changePublicMonth(delta) {
   publicMonth += delta;
   if (publicMonth < 0) { publicMonth = 11; publicYear--; }
   if (publicMonth > 11) { publicMonth = 0; publicYear++; }
+  updatePublicMonthLabel();
+  renderPublicGroupOptions();
   renderPublicCalendar();
+}
+
+function updatePublicMonthLabel() {
+  const el = document.getElementById('public-month-label');
+  if (el) el.textContent = `${publicYear}年 ${publicMonth + 1}月`;
 }
 window.togglePublicGroup = togglePublicGroup;
 window.renderPublicGroupOptions = renderPublicGroupOptions;
 window.renderPublicCalendar = renderPublicCalendar;
 window.changePublicMonth = changePublicMonth;
+window.updatePublicMonthLabel = updatePublicMonthLabel;
 
 function renderAdminInputTab() { }
 
