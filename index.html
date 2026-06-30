@@ -166,13 +166,11 @@
 </head>
 <body>
 
-<!--
-  メンテナンス画面
--->
-<!--　<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>　-->
+<!-- メンテナンス画面 -->
+<!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
 
 <header>
-  <h1>空き時間共有カレンダー</h1>
+  <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
     <span class="badge" id="mode-badge">閲覧者モード</span>
   </div>
@@ -1048,6 +1046,23 @@ window.addEventListener('DOMContentLoaded', async () => {
   renderInputCalendar();
   setupMaintenanceSecretTrigger();
   updateMaintenanceOverlay();
+
+ 
+  let titleTapCount = 0;
+  let titleTapTimer = null;
+  const appTitle = document.getElementById('app-title');
+  if (appTitle) {
+    appTitle.addEventListener('click', () => {
+      if (isAdmin) return;
+      titleTapCount += 1;
+      if (titleTapTimer) clearTimeout(titleTapTimer);
+      titleTapTimer = setTimeout(() => { titleTapCount = 0; }, 1500);
+      if (titleTapCount >= 7) {
+        titleTapCount = 0;
+        openModeModal();
+      }
+    });
+  }
 });
 </script>
 </body>
