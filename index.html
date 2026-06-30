@@ -757,6 +757,16 @@ function renderPublicCalendar() {
 
   const groups = publicGroupIds.map(id => db.groups[id]).filter(Boolean);
   const members = [...new Set(groups.flatMap(g => g.members || []))];
+
+  // 回答者が1人以下の場合は公開カレンダーを非表示
+  if (members.length <= 1) {
+    area.style.display = 'block';
+    document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
+    document.getElementById('public-calendar').innerHTML = '';
+    document.getElementById('public-output-list').innerHTML =
+      '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
+    return;
+  }
   document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
   area.style.display = 'block';
   document.getElementById('public-cal-title').textContent = `${publicYear}年 ${publicMonth + 1}月`;
