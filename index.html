@@ -89,9 +89,6 @@
   .cal-day.common-all .day-num { color: #14532d; }
   .cal-day.common-none { background: #fecaca; border-color: #dc2626; }
   .cal-day.common-none .day-num { color: #7f1d1d; }
-  .cal-day.common-time { background: #fef08a; border-color: #ca8a04; }
-  .cal-day.common-time .day-num { color: #713f12; }
-  .cal-day.common-partial { background: #e5e7eb; border-color: #9ca3af; }
 
   .day-num { font-weight: 600; font-size: 0.85rem; line-height: 1; }
   .day-time-label {
@@ -157,6 +154,24 @@
     display: flex;
   }
 
+  .permission-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .permission-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .permission-chip input { accent-color: #111827; }
+
   @media(max-width:600px) {
     .form-row { flex-direction: column; }
     .cal-day { font-size: 0.72rem; min-height: 40px; }
@@ -179,6 +194,7 @@
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab('input', this)">予定入力</button>
   <button class="tab-btn" onclick="showTab('public', this)">公開カレンダー</button>
+  <button class="tab-btn" onclick="showTab('private', this)">個人予定閲覧</button>
   <button class="tab-btn admin-only" onclick="showTab('admin', this)" style="display:none;">管理追加</button>
   <button class="tab-btn admin-only" onclick="showTab('manage', this)" style="display:none;">管理一覧</button>
 </div>
@@ -247,6 +263,15 @@
         <button class="btn btn-secondary" onclick="clearInputSelection()">クリア</button>
       </div>
     </div>
+
+    <div class="card">
+      <h2>個人予定の閲覧許可</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">チェックした相手だけが、あなたの個人予定タブを閲覧できます。</p>
+      <div id="permission-list" class="permission-grid"></div>
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" onclick="savePermissions()">許可設定を保存</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -272,10 +297,10 @@
     </div>
     <div class="card">
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#bbf7d0;border:2px solid #16a34a;"></div> 全員空き（緑）</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fef08a;border:2px solid #ca8a04;"></div> 共通時間帯あり（黄）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#bbf7d0;border:2px solid #16a34a;"></div> 全員一日空き（緑）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#bfdbfe;border:2px solid #2563eb;"></div> 全員午前空き（青）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fef08a;border:2px solid #ca8a04;"></div> 全員午後空き（黄）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#fecaca;border:2px solid #dc2626;"></div> 空きなし（赤）</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#e5e7eb;border:2px solid #9ca3af;"></div> 一部空き</div>
       </div>
       <div style="text-align:center;padding:6px 0 12px;font-size:0.95rem;font-weight:600;" id="public-cal-title"></div>
       <div class="cal-wrap">
@@ -285,6 +310,38 @@
     <div class="card">
       <h2>空き日時一覧</h2>
       <div id="public-output-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-private" class="section">
+  <div class="card">
+    <h2>個人予定閲覧</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">閲覧を許可されたユーザーの予定だけ表示できます。</p>
+    <div class="form-row">
+      <div class="form-group" style="max-width:320px;">
+        <label>ユーザー選択</label>
+        <select id="private-user-select" onchange="selectPrivateUser(this.value)"></select>
+      </div>
+    </div>
+  </div>
+
+  <div id="private-calendar-area" style="display:none;">
+    <div class="card">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changePrivateMonth(-1)">◀</button>
+        <h3 id="private-cal-title"></h3>
+        <button class="cal-nav-btn" onclick="changePrivateMonth(1)">▶</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#bbf7d0;border:2px solid #16a34a;"></div> 一日</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#bfdbfe;border:2px solid #2563eb;"></div> 午前</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fef08a;border:2px solid #ca8a04;"></div> 午後</div>
+        <div class="legend-item"><div class="legend-dot" style="background:white;border:2px solid #e5e7eb;"></div> 未設定</div>
+      </div>
+      <div class="cal-wrap">
+        <div class="calendar" id="private-calendar"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -360,7 +417,7 @@ const database = getDatabase(firebaseApp);
 const DB_REF = ref(database, 'scheduleApp');
 const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
 
-function getDefaultData() { return { users: {}, groups: {}, schedules: {} }; }
+function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {} }; }
 
 let db = getDefaultData();
 let _isSaving = false;
@@ -372,10 +429,12 @@ let inputSelections = {};
 const now = new Date();
 let inputYear = now.getFullYear(), inputMonth = now.getMonth();
 let publicYear = now.getFullYear(), publicMonth = now.getMonth();
+let privateYear = now.getFullYear(), privateMonth = now.getMonth();
 let publicGroupIds = [];
 let adminHash = null;
 let maintenanceTapCount = 0;
 let maintenanceTapTimer = null;
+let selectedPrivateUser = '';
 
 async function sha256Hex(text) {
   const bytes = new TextEncoder().encode(text);
@@ -406,12 +465,16 @@ function normalizeDB(raw) {
   const normalized = {
     users: raw.users && typeof raw.users === 'object' ? raw.users : {},
     groups: raw.groups && typeof raw.groups === 'object' ? raw.groups : {},
-    schedules: raw.schedules && typeof raw.schedules === 'object' ? raw.schedules : {}
+    schedules: raw.schedules && typeof raw.schedules === 'object' ? raw.schedules : {},
+    permissions: raw.permissions && typeof raw.permissions === 'object' ? raw.permissions : {}
   };
   Object.keys(normalized.schedules).forEach(username => {
     const sched = normalized.schedules[username] || {};
     if (!sched.days || typeof sched.days !== 'object') sched.days = {};
     if (!sched.times || typeof sched.times !== 'object') sched.times = {};
+  });
+  Object.keys(normalized.users).forEach(username => {
+    if (!Array.isArray(normalized.permissions[username])) normalized.permissions[username] = [];
   });
   return normalized;
 }
@@ -428,8 +491,9 @@ onValue(DB_REF, (snapshot) => {
 function refreshUI() {
   const activeTab = document.querySelector('.section.active');
   const tabId = activeTab ? activeTab.id.replace('tab-', '') : 'input';
-  if (tabId === 'input') { if (currentUser) renderInputCalendar(); }
+  if (tabId === 'input') { if (currentUser) { renderInputCalendar(); renderPermissionList(); } }
   if (tabId === 'public') renderPublicCalendar();
+  if (tabId === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
   if (tabId === 'admin' && isAdmin) renderAdminInputTab();
   if (tabId === 'manage' && isAdmin) renderAdminManageTab();
 }
@@ -445,12 +509,14 @@ function showTab(name, btn) {
       document.getElementById('login-card').style.display = 'none';
       document.getElementById('input-area').style.display = 'block';
       renderInputCalendar();
+      renderPermissionList();
     } else {
       document.getElementById('login-card').style.display = 'block';
       document.getElementById('input-area').style.display = 'none';
     }
   }
   if (name === 'public') { updatePublicMonthLabel(); renderPublicGroupOptions(); renderPublicCalendar(); }
+  if (name === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
   if (name === 'admin' && isAdmin) renderAdminInputTab();
   if (name === 'manage' && isAdmin) renderAdminManageTab();
 }
@@ -555,12 +621,15 @@ function loginUser() {
   Object.entries(days).forEach(([date, type]) => { inputSelections[date] = type; });
 
   renderInputCalendar();
+  renderPermissionList();
+  renderPrivateUserOptions();
   msg.innerHTML = '';
 }
 
 function logoutUser() {
   currentUser = null;
   inputSelections = {};
+  selectedPrivateUser = '';
   document.getElementById('login-card').style.display = 'block';
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('login-username').value = '';
@@ -688,13 +757,29 @@ function saveSchedule() {
   showAlert('保存しました！', 'success');
 }
 
-function showAlert(msg, type) {
-  const el = document.createElement('div');
-  el.className = `alert alert-${type}`;
-  el.textContent = msg;
-  const area = document.getElementById('input-area') || document.body;
-  area.insertBefore(el, area.firstChild);
-  setTimeout(() => el.remove(), 3000);
+function renderPermissionList() {
+  const el = document.getElementById('permission-list');
+  if (!el || !currentUser) return;
+  const users = Object.keys(db.users).filter(u => u !== currentUser).sort((a,b) => a.localeCompare(b, 'ja'));
+  const allowed = db.permissions[currentUser] || [];
+  if (!users.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">他のユーザーがいません。</p>';
+    return;
+  }
+  el.innerHTML = users.map(u => `
+    <label class="permission-chip">
+      <input type="checkbox" value="${u}" ${allowed.includes(u) ? 'checked' : ''}>
+      <span>${u}</span>
+    </label>
+  `).join('');
+}
+
+function savePermissions() {
+  if (!currentUser) return;
+  const checked = [...document.querySelectorAll('#permission-list input[type="checkbox"]:checked')].map(el => el.value);
+  db.permissions[currentUser] = checked;
+  saveData();
+  showAlert('閲覧許可を保存しました！', 'success');
 }
 
 window.renderInputCalendar = renderInputCalendar;
@@ -703,6 +788,7 @@ window.changeInputMonth = changeInputMonth;
 window.clearInputSelection = clearInputSelection;
 window.saveSchedule = saveSchedule;
 window.setInputType = setInputType;
+window.savePermissions = savePermissions;
 
 function getCurrentUserGroups() {
   if (!currentUser) return [];
@@ -769,7 +855,6 @@ function renderPublicCalendar() {
   const firstDay = new Date(publicYear, publicMonth, 1).getDay();
   const answeredUsers = getAnsweredUsersInMonth(members, publicYear, publicMonth);
 
-  // 実際に回答した人が1人以下の場合はカレンダーを非表示
   if (answeredUsers.length <= 1) {
     document.getElementById('public-calendar').innerHTML = '';
     document.getElementById('public-output-list').innerHTML =
@@ -787,23 +872,17 @@ function renderPublicCalendar() {
   for (let d = 1; d <= dim; d++) {
     const ds = `${publicYear}-${pad(publicMonth+1)}-${pad(d)}`;
     const dow = new Date(publicYear, publicMonth, d).getDay();
-    const availableUsers = getAvailableUsersOnDate(answeredUsers, ds);
-    const freeCount = availableUsers.length;
     const commonType = getCommonAvailabilityType(answeredUsers, ds);
-    const noneFree = answeredUsers.length > 0 ? freeCount === 0 : true;
 
     let cls = 'cal-day';
     if (dow === 0) cls += ' sun';
     if (dow === 6) cls += ' sat';
     if (ds === todayStr) cls += ' today';
 
-    let colorClass = '';
-    if (commonType === 'full') colorClass = 'common-all';
-    else if (commonType === 'am') colorClass = 'day-am';
-    else if (commonType === 'pm') colorClass = 'day-pm';
-    else if (noneFree) colorClass = 'common-none';
-    else colorClass = 'common-partial';
-    cls += ' ' + colorClass;
+    if (commonType === 'full') cls += ' common-all';
+    else if (commonType === 'am') cls += ' day-am';
+    else if (commonType === 'pm') cls += ' day-pm';
+    else cls += ' common-none';
 
     html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
 
@@ -840,6 +919,83 @@ window.renderPublicCalendar = renderPublicCalendar;
 window.changePublicMonth = changePublicMonth;
 window.updatePublicMonthLabel = updatePublicMonthLabel;
 
+function getViewableUsers() {
+  if (!currentUser) return [];
+  return Object.keys(db.users).filter(username => username !== currentUser && (db.permissions[username] || []).includes(currentUser)).sort((a,b) => a.localeCompare(b, 'ja'));
+}
+
+function renderPrivateUserOptions() {
+  const select = document.getElementById('private-user-select');
+  const area = document.getElementById('private-calendar-area');
+  if (!select || !area) return;
+  if (!currentUser) {
+    select.innerHTML = '<option value="">ログインしてください</option>';
+    area.style.display = 'none';
+    return;
+  }
+  const users = getViewableUsers();
+  if (!users.length) {
+    selectedPrivateUser = '';
+    select.innerHTML = '<option value="">閲覧できるユーザーがいません</option>';
+    area.style.display = 'none';
+    return;
+  }
+  if (!users.includes(selectedPrivateUser)) selectedPrivateUser = users[0];
+  select.innerHTML = users.map(u => `<option value="${u}" ${u===selectedPrivateUser ? 'selected' : ''}>${u}</option>`).join('');
+  area.style.display = selectedPrivateUser ? 'block' : 'none';
+}
+
+function selectPrivateUser(username) {
+  selectedPrivateUser = username;
+  renderPrivateCalendar();
+}
+
+function renderPrivateCalendar() {
+  const cal = document.getElementById('private-calendar');
+  const title = document.getElementById('private-cal-title');
+  const area = document.getElementById('private-calendar-area');
+  if (!cal || !title || !area) return;
+  if (!currentUser || !selectedPrivateUser || !(db.permissions[selectedPrivateUser] || []).includes(currentUser)) {
+    area.style.display = 'none';
+    return;
+  }
+  area.style.display = 'block';
+  title.textContent = `${selectedPrivateUser} の予定 - ${privateYear}年 ${privateMonth + 1}月`;
+
+  const DOW = ['日','月','火','水','木','金','土'];
+  let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
+
+  const firstDay = new Date(privateYear, privateMonth, 1).getDay();
+  const daysInMonth = new Date(privateYear, privateMonth + 1, 0).getDate();
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${privateYear}-${pad(privateMonth+1)}-${pad(d)}`;
+    const dow = new Date(privateYear, privateMonth, d).getDay();
+    const dayType = getDayType(selectedPrivateUser, ds);
+
+    let cls = 'cal-day';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    if (ds === todayStr) cls += ' today';
+    if (dayType === 'full') cls += ' day-free';
+    else if (dayType === 'am') cls += ' day-am';
+    else if (dayType === 'pm') cls += ' day-pm';
+
+    html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
+  }
+  cal.innerHTML = html;
+}
+
+function changePrivateMonth(delta) {
+  privateMonth += delta;
+  if (privateMonth < 0) { privateMonth = 11; privateYear--; }
+  if (privateMonth > 11) { privateMonth = 0; privateYear++; }
+  renderPrivateCalendar();
+}
+window.selectPrivateUser = selectPrivateUser;
+window.changePrivateMonth = changePrivateMonth;
+
 function renderAdminInputTab() { }
 
 function renderAdminManageTab() {
@@ -858,6 +1014,7 @@ function addUser() {
   nameInput.value = ''; passInput.value = '';
   db.users[name] = { password: pass };
   if (!db.schedules[name]) db.schedules[name] = { days: {}, times: {} };
+  if (!Array.isArray(db.permissions[name])) db.permissions[name] = [];
   saveData();
   renderAdminManageTab();
 }
@@ -866,6 +1023,10 @@ function deleteUser(name) {
   if (!confirm(`"${name}" を削除しますか？`)) return;
   delete db.users[name];
   delete db.schedules[name];
+  delete db.permissions[name];
+  Object.keys(db.permissions).forEach(owner => {
+    db.permissions[owner] = (db.permissions[owner] || []).filter(u => u !== name);
+  });
   Object.values(db.groups).forEach(g => { g.members = (g.members||[]).filter(m => m !== name); });
   saveData();
   renderAdminManageTab();
@@ -887,6 +1048,14 @@ function changeUserName(username) {
     delete db.schedules[username];
   }
 
+  if (db.permissions[username]) {
+    db.permissions[trimmed] = db.permissions[username];
+    delete db.permissions[username];
+  }
+  Object.keys(db.permissions).forEach(owner => {
+    db.permissions[owner] = (db.permissions[owner] || []).map(m => m === username ? trimmed : m);
+  });
+
   Object.values(db.groups).forEach(g => {
     if (!Array.isArray(g.members)) return;
     g.members = g.members.map(m => m === username ? trimmed : m);
@@ -897,6 +1066,7 @@ function changeUserName(username) {
     const el = document.getElementById('current-username');
     if (el) el.textContent = trimmed;
   }
+  if (selectedPrivateUser === username) selectedPrivateUser = trimmed;
 
   saveData();
   renderAdminManageTab();
@@ -1010,7 +1180,7 @@ function importData(event) {
     try {
       const imported = JSON.parse(e.target.result);
       if (imported.users && imported.groups && imported.schedules) {
-        db = imported;
+        db = normalizeDB(imported);
         saveData();
         renderAdminManageTab();
         alert('データを読み込みました。');
@@ -1046,8 +1216,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   renderInputCalendar();
   setupMaintenanceSecretTrigger();
   updateMaintenanceOverlay();
+  updatePublicMonthLabel();
 
- 
   let titleTapCount = 0;
   let titleTapTimer = null;
   const appTitle = document.getElementById('app-title');
