@@ -1,138 +1,189 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>空き時間共有カレンダー</title>
-  <style>
-    :root {
-      --primary: #374151;
-      --primary-dark: #1f2937;
-      --bg: #f9fafb;
-      --card: #ffffff;
-      --border: #e5e7eb;
-      --text: #111827;
-      --muted: #6b7280;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>空き時間共有カレンダー</title>
+<style>
+  :root {
+    --primary: #374151;
+    --primary-dark: #1f2937;
+    --bg: #f9fafb;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    header {
-      background: #111827; color: white; padding: 16px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    header h1 { font-size: 1.3rem; font-weight: 700; }
-    .header-badges { display: flex; gap: 8px; align-items: center; }
-    .badge { padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); }
-    .badge.admin { background: rgba(255,255,255,0.25); }
+  header {
+    background: #111827; color: white; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 1.3rem; font-weight: 700; }
+  .header-badges { display: flex; gap: 8px; align-items: center; }
+  .badge { padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); }
+  .badge.admin { background: rgba(255,255,255,0.25); }
 
-    .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; }
-    .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
-    .tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
-    .tab-btn:hover:not(.active) { color: var(--text); background: var(--bg); }
+  .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 600; }
+  .tab-btn:hover:not(.active) { color: var(--text); background: var(--bg); }
 
-    .section { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
-    .section.active { display: block; }
+  .section { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
+  .section.active { display: block; }
 
-    .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 14px; }
-    .card h2 { font-size: 1rem; margin-bottom: 14px; font-weight: 600; }
-    .card h3 { font-size: 0.875rem; margin-bottom: 10px; color: var(--muted); }
+  .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 14px; }
+  .card h2 { font-size: 1rem; margin-bottom: 14px; font-weight: 600; }
+  .card h3 { font-size: 0.875rem; margin-bottom: 10px; color: var(--muted); }
 
-    .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
-    .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
-    label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
-    input[type="text"], input[type="password"], input[type="email"], select {
-      padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-      font-size: 0.9rem; color: var(--text); background: white; transition: border-color 0.2s;
-    }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
+  .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+  label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  input[type="text"], input[type="password"], input[type="time"], input[type="date"], select {
+    padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 0.9rem; color: var(--text); background: white; transition: border-color 0.2s;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--primary); }
 
-    .btn { padding: 8px 16px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
-    .btn-primary { background: #111827; color: white; border-color: #111827; }
-    .btn-primary:hover { background: #374151; }
-    .btn-danger { background: white; color: #374151; border-color: #d1d5db; }
-    .btn-danger:hover { background: #f3f4f6; }
-    .btn-success { background: #111827; color: white; border-color: #111827; }
-    .btn-secondary { background: white; color: var(--text); border-color: var(--border); }
-    .btn-secondary:hover { background: var(--bg); }
-    .btn-warning { background: #374151; color: white; border-color: #374151; }
-    .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+  .btn { padding: 8px 16px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .btn-primary { background: #111827; color: white; border-color: #111827; }
+  .btn-primary:hover { background: #374151; }
+  .btn-danger { background: white; color: #374151; border-color: #d1d5db; }
+  .btn-danger:hover { background: #f3f4f6; }
+  .btn-success { background: #111827; color: white; border-color: #111827; }
+  .btn-secondary { background: white; color: var(--text); border-color: var(--border); }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-warning { background: #374151; color: white; border-color: #374151; }
+  .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
 
-    .cal-wrap { overflow-x: auto; }
-    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; min-width: 280px; }
-    .cal-header { text-align: center; padding: 6px 2px; font-size: 0.72rem; font-weight: 600; color: var(--muted); }
-    .cal-header.sun { color: #ef4444; }
-    .cal-header.sat { color: #3b82f6; }
+  .cal-wrap { overflow-x: auto; }
+  .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; min-width: 280px; }
+  .cal-header { text-align: center; padding: 6px 2px; font-size: 0.72rem; font-weight: 600; color: var(--muted); }
+  .cal-header.sun { color: #ef4444; }
+  .cal-header.sat { color: #3b82f6; }
 
-    .cal-day {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 48px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;
-      transition: all 0.12s; position: relative; user-select: none;
-      border: 2px solid transparent; padding: 2px; gap: 1px;
-    }
-    .cal-day.empty { cursor: default; background: none !important; border-color: transparent !important; }
-    .cal-day.sun .day-num { color: #ef4444; }
-    .cal-day.sat .day-num { color: #3b82f6; }
-    .cal-day.today { box-shadow: none; }
+  .cal-day {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 48px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;
+    transition: all 0.12s; position: relative; user-select: none;
+    border: 2px solid transparent; padding: 2px; gap: 1px;
+  }
+  .cal-day.empty { cursor: default; background: none !important; border-color: transparent !important; }
+  .cal-day.sun .day-num { color: #ef4444; }
+  .cal-day.sat .day-num { color: #3b82f6; }
+  .cal-day.today { box-shadow: none; }
 
-    .cal-day.day-free { background: #bbf7d0; border-color: #16a34a; }
-    .cal-day.day-free .day-num { color: #14532d; }
-    .cal-day.day-am { background: #bfdbfe; border-color: #2563eb; }
-    .cal-day.day-am .day-num { color: #1e3a8a; }
-    .cal-day.day-pm { background: #fef08a; border-color: #ca8a04; }
-    .cal-day.day-pm .day-num { color: #713f12; }
-    .cal-day.day-busy { background: #fecaca; border-color: #dc2626; }
-    .cal-day.day-busy .day-num { color: #7f1d1d; }
-    .cal-day:not(.empty):not(.day-free):not(.day-busy):not(.day-time):hover { background: #f3f4f6; }
+  .cal-day.day-free { background: #bbf7d0; border-color: #16a34a; }
+  .cal-day.day-free .day-num { color: #14532d; }
+  .cal-day.day-am { background: #bfdbfe; border-color: #2563eb; }
+  .cal-day.day-am .day-num { color: #1e3a8a; }
+  .cal-day.day-pm { background: #fef08a; border-color: #ca8a04; }
+  .cal-day.day-pm .day-num { color: #713f12; }
+  .cal-day.day-busy { background: #fecaca; border-color: #dc2626; }
+  .cal-day.day-busy .day-num { color: #7f1d1d; }
+  .cal-day:not(.empty):not(.day-free):not(.day-busy):not(.day-time):hover { background: #f3f4f6; }
 
-    .cal-day.common-all  { background: #bbf7d0; border-color: #16a34a; }
-    .cal-day.common-all .day-num { color: #14532d; }
-    .cal-day.common-none { background: #fecaca; border-color: #dc2626; }
-    .cal-day.common-none .day-num { color: #7f1d1d; }
+  .cal-day.common-all  { background: #bbf7d0; border-color: #16a34a; }
+  .cal-day.common-all .day-num { color: #14532d; }
+  .cal-day.common-none { background: #fecaca; border-color: #dc2626; }
+  .cal-day.common-none .day-num { color: #7f1d1d; }
 
-    .day-num { font-weight: 600; font-size: 0.85rem; line-height: 1; }
+  .day-num { font-weight: 600; font-size: 0.85rem; line-height: 1; }
+  .day-time-label {
+    font-size: 0.6rem; font-weight: 600; line-height: 1.1; color: #713f12;
+    text-align: center; white-space: nowrap; overflow: hidden; max-width: 100%;
+    padding: 1px 2px; background: rgba(255,255,255,0.6); border-radius: 3px;
+  }
 
-    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .cal-nav h3 { font-size: 0.95rem; font-weight: 600; }
-    .cal-nav-btn { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.85rem; }
-    .cal-nav-btn:hover { background: var(--bg); }
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-nav h3 { font-size: 0.95rem; font-weight: 600; }
+  .cal-nav-btn { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.85rem; }
+  .cal-nav-btn:hover { background: var(--bg); }
 
-    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
-    .legend-dot { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
+  .legend-dot { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
 
-    .user-list { display: flex; flex-direction: column; gap: 6px; }
-    .user-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
-    .user-item input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #111827; }
-    .user-avatar { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: white; flex-shrink: 0; background: #374151; }
-    .user-name { font-weight: 500; font-size: 0.875rem; flex: 1; }
+  .user-list { display: flex; flex-direction: column; gap: 6px; }
+  .user-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--bg); border-radius: 6px; border: 1px solid var(--border); }
+  .user-item input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #111827; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: white; flex-shrink: 0; background: #374151; }
+  .user-name { font-weight: 500; font-size: 0.875rem; flex: 1; }
 
-    .group-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: 8px; border: 1.5px solid var(--border); margin-bottom: 6px; }
-    .output-day { display: inline-flex; flex-direction: column; gap: 2px; padding: 8px 12px; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; font-weight: 500; font-size: 0.875rem; color: #14532d; margin: 3px; }
-    .mode-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+  .group-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: 8px; border: 1.5px solid var(--border); margin-bottom: 6px; }
 
-    .alert { padding: 9px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; font-weight: 500; }
-    .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
-    .alert-error { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
-    .alert-info { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+  .output-day { display: inline-flex; flex-direction: column; gap: 2px; padding: 8px 12px; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; font-weight: 500; font-size: 0.875rem; color: #14532d; margin: 3px; }
 
-    .public-header { text-align: center; padding: 20px; background: #111827; color: white; border-radius: 8px; margin-bottom: 14px; }
-    .public-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
+  .mode-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
 
-    .permission-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .permission-chip {
-      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
-      border: 1px solid var(--border); border-radius: 999px; background: white; font-size: 0.85rem; cursor: pointer;
-    }
-    .permission-chip input { accent-color: #111827; }
+  .alert { padding: 9px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; font-weight: 500; }
+  .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+  .alert-error { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+  .alert-info { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
 
-    @media(max-width:600px) {
-      .form-row { flex-direction: column; }
-      .cal-day { font-size: 0.72rem; min-height: 40px; }
-    }
-  </style>
+  .public-header { text-align: center; padding: 20px; background: #111827; color: white; border-radius: 8px; margin-bottom: 14px; }
+  .public-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 10px; padding: 24px; min-width: 300px; max-width: 480px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border: 1px solid var(--border); }
+  .modal h2 { margin-bottom: 16px; font-size: 1rem; font-weight: 600; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+  .pw-text { font-family: monospace; background: #f3f4f6; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.82rem; }
+
+  .maintenance-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #111827;
+    color: white;
+    font-size: clamp(2rem, 8vw, 5rem);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    cursor: default;
+    user-select: none;
+  }
+
+  .maintenance-overlay.active {
+    display: flex;
+  }
+
+  .permission-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .permission-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .permission-chip input { accent-color: #111827; }
+
+  @media(max-width:600px) {
+    .form-row { flex-direction: column; }
+    .cal-day { font-size: 0.72rem; min-height: 40px; }
+    .day-time-label { font-size: 0.55rem; }
+  }
+</style>
 </head>
 <body>
+
+<!-- メンテナンス画面 -->
+<!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
+
 <header>
   <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
@@ -158,7 +209,7 @@
       </div>
       <div class="form-group">
         <label>パスワード</label>
-        <input type="password" id="login-password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUser()">
+        <input type="password" id="login-password" placeholder="パスワード" autocomplete="new-password" onkeydown="if(event.key==='Enter')loginUser()">
       </div>
       <button class="btn btn-primary" onclick="loginUser()">ログイン</button>
     </div>
@@ -185,6 +236,10 @@
 
       <div class="alert alert-info" style="margin-bottom:10px;">
         📅 <strong>空いている日をタップして入力してください。</strong>もう一度タップすると未設定に戻せます。
+      </div>
+
+      <div class="alert alert-info" id="input-type-info">
+        <strong>通常入力：</strong>入力タイプを選んでカレンダーを押すと反映されます。もう一度押すと未設定に戻せます。
       </div>
 
       <div class="legend" style="margin-bottom:12px;">
@@ -296,9 +351,7 @@
   <div class="card">
     <h2>ユーザー追加</h2>
     <div class="form-row">
-      <div class="form-group"><label>表示名</label><input type="text" id="admin-new-displayname" placeholder="表示名" autocomplete="off" autocapitalize="off"></div>
-      <div class="form-group"><label>ログインID</label><input type="text" id="admin-new-username" placeholder="login id" autocomplete="off" autocapitalize="off"></div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="admin-new-email" placeholder="user@example.com" autocomplete="off"></div>
+      <div class="form-group"><label>ユーザー名</label><input type="text" id="admin-new-username" placeholder="新しいユーザー名" autocomplete="off" autocapitalize="off"></div>
       <div class="form-group"><label>パスワード</label><input type="password" id="admin-new-password" placeholder="パスワード" autocomplete="new-password"></div>
       <button class="btn btn-primary" onclick="addUser()">追加</button>
     </div>
@@ -310,6 +363,15 @@
       <button class="btn btn-primary" onclick="addGroup()">グループ作成</button>
     </div>
   </div>
+  <div class="card">
+    <h2>データ管理</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-warning" onclick="exportData()">📥 データ書き出し</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📤 データ読み込み</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-danger" onclick="if(confirm('すべてのデータをリセットしますか？'))resetAll()">🗑 全リセット</button>
+    </div>
+  </div>
 </div>
 
 <div id="tab-manage" class="section">
@@ -318,640 +380,873 @@
   <div class="card"><h2>グループ一覧</h2><div id="admin-group-list"></div></div>
 </div>
 
+<div class="modal-overlay" id="mode-modal">
+  <div class="modal">
+    <h2>🔐 管理者ログイン</h2>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>管理者パスワード</label>
+      <input type="password" id="admin-password-input" placeholder="パスワードを入力" autocomplete="new-password"
+        onkeydown="if(event.key==='Enter')tryAdminLogin()">
+    </div>
+    <div id="mode-modal-msg"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="tryAdminLogin()">ログイン</button>
+      <button class="btn btn-warning" id="logout-admin-btn" style="display:none;" onclick="logoutAdmin()">管理者ログアウト</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getAuth,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    createUserWithEmailAndPassword
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import {
-    getDatabase,
-    ref,
-    set,
-    get,
-    update,
-    onValue,
-    child
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+const firebaseConfig = {
+  apiKey: "AIzaSyDqHcFOvjgNf08hJneUSJUU2deoqWSJVHw",
+  authDomain: "schsha-ea57a.firebaseapp.com",
+  databaseURL: "https://schsha-ea57a-default-rtdb.firebaseio.com",
+  projectId: "schsha-ea57a",
+  storageBucket: "schsha-ea57a.firebasestorage.app",
+  messagingSenderId: "1017948674310",
+  appId: "1:1017948674310:web:6b52fa0f8b697198c8e687",
+  measurementId: "G-Z2W0YDWYYX"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const database = getDatabase(firebaseApp);
+const DB_REF = ref(database, 'scheduleApp');
+const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
+
+function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {} }; }
+
+let db = getDefaultData();
+let _isSaving = false;
+let isAdmin = false;
+let currentUser = null;
+let currentInputType = 'full';
+let inputSelections = {};
+
+const now = new Date();
+let inputYear = now.getFullYear(), inputMonth = now.getMonth();
+let publicYear = now.getFullYear(), publicMonth = now.getMonth();
+let privateYear = now.getFullYear(), privateMonth = now.getMonth();
+let publicGroupIds = [];
+let adminHash = null;
+let maintenanceTapCount = 0;
+let maintenanceTapTimer = null;
+let selectedPrivateUser = '';
+
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function ensureAdminHash() {
+  const snap = await get(ADMIN_HASH_REF);
+  if (snap.exists()) {
+    adminHash = snap.val();
+    return;
+  }
+  const defaultHash = await sha256Hex('1237');
+  adminHash = defaultHash;
+  await set(ADMIN_HASH_REF, defaultHash);
+}
+
+function saveData() {
+  _isSaving = true;
+  set(DB_REF, JSON.parse(JSON.stringify(db)))
+    .then(() => { _isSaving = false; })
+    .catch(e => { _isSaving = false; console.error('保存エラー', e); });
+}
+
+function normalizeDB(raw) {
+  if (!raw || typeof raw !== 'object') return getDefaultData();
+  const normalized = {
+    users: raw.users && typeof raw.users === 'object' ? raw.users : {},
+    groups: raw.groups && typeof raw.groups === 'object' ? raw.groups : {},
+    schedules: raw.schedules && typeof raw.schedules === 'object' ? raw.schedules : {},
+    permissions: raw.permissions && typeof raw.permissions === 'object' ? raw.permissions : {}
   };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const database = getDatabase(app);
-
-  const ROOT_PATH = 'scheduleApp';
-  const rootRef = ref(database, ROOT_PATH);
-
-  let db = { users: {}, groups: {}, schedules: {}, permissions: {}, admins: {} };
-  let currentUser = null;
-  let currentUid = null;
-  let isAdmin = false;
-  let currentInputType = 'full';
-  let selectedPrivateUser = '';
-  let inputSelections = {};
-
-  const now = new Date();
-  let inputYear = now.getFullYear(), inputMonth = now.getMonth();
-  let publicYear = now.getFullYear(), publicMonth = now.getMonth();
-  let privateYear = now.getFullYear(), privateMonth = now.getMonth();
-  let publicGroupIds = [];
-
-  function getDefaultData() {
-    return { users: {}, groups: {}, schedules: {}, permissions: {}, admins: {} };
-  }
-
-  function normalizeDB(raw) {
-    const x = raw && typeof raw === 'object' ? raw : {};
-    return {
-      users: x.users && typeof x.users === 'object' ? x.users : {},
-      groups: x.groups && typeof x.groups === 'object' ? x.groups : {},
-      schedules: x.schedules && typeof x.schedules === 'object' ? x.schedules : {},
-      permissions: x.permissions && typeof x.permissions === 'object' ? x.permissions : {},
-      admins: x.admins && typeof x.admins === 'object' ? x.admins : {}
-    };
-  }
-
-  function pad(n) { return String(n).padStart(2, '0'); }
-  function toDateStr(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
-  const todayStr = toDateStr(new Date());
-
-  onValue(rootRef, snapshot => {
-    db = normalizeDB(snapshot.val());
-    if (currentUid) {
-      const profile = db.users[currentUid] || {};
-      currentUser = profile.displayName || profile.username || 'ユーザー';
-      isAdmin = !!db.admins[currentUid];
-      updateModeUI();
-    }
-    refreshUI();
+  Object.keys(normalized.schedules).forEach(username => {
+    const sched = normalized.schedules[username] || {};
+    if (!sched.days || typeof sched.days !== 'object') sched.days = {};
+    if (!sched.times || typeof sched.times !== 'object') sched.times = {};
   });
+  Object.keys(normalized.users).forEach(username => {
+    if (!Array.isArray(normalized.permissions[username])) normalized.permissions[username] = [];
+  });
+  return normalized;
+}
 
-  onAuthStateChanged(auth, async (user) => {
-    const msg = document.getElementById('login-msg');
+onValue(DB_REF, (snapshot) => {
+  if (_isSaving) return;
+  db = normalizeDB(snapshot.val());
+  refreshUI();
+}, (err) => {
+  console.error('Firebase read error', err);
+  refreshUI();
+});
 
-    if (!user) {
-      currentUid = null;
-      currentUser = null;
-      isAdmin = false;
-      inputSelections = {};
-      selectedPrivateUser = '';
+function refreshUI() {
+  const activeTab = document.querySelector('.section.active');
+  const tabId = activeTab ? activeTab.id.replace('tab-', '') : 'input';
+  if (tabId === 'input') { if (currentUser) { renderInputCalendar(); renderPermissionList(); } }
+  if (tabId === 'public') renderPublicCalendar();
+  if (tabId === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
+  if (tabId === 'admin' && isAdmin) renderAdminInputTab();
+  if (tabId === 'manage' && isAdmin) renderAdminManageTab();
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  if (name === 'input') {
+    if (currentUser) {
+      document.getElementById('login-card').style.display = 'none';
+      document.getElementById('input-area').style.display = 'block';
+      renderInputCalendar();
+      renderPermissionList();
+    } else {
       document.getElementById('login-card').style.display = 'block';
       document.getElementById('input-area').style.display = 'none';
-      updateModeUI();
-      refreshUI();
-      return;
     }
+  }
+  if (name === 'public') { updatePublicMonthLabel(); renderPublicGroupOptions(); renderPublicCalendar(); }
+  if (name === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
+  if (name === 'admin' && isAdmin) renderAdminInputTab();
+  if (name === 'manage' && isAdmin) renderAdminManageTab();
+}
+window.showTab = showTab;
 
-    currentUid = user.uid;
-    const snap = await get(child(rootRef, `users/${currentUid}`));
-    const profile = snap.exists() ? snap.val() : null;
-    currentUser = profile?.displayName || profile?.username || user.email || 'ユーザー';
-    isAdmin = !!db.admins[currentUid];
+function updateMaintenanceOverlay() {
+  const overlay = document.getElementById('maintenance-overlay');
+  if (!overlay) return;
+  if (overlay.dataset.enabled === 'true' && !isAdmin) {
+    overlay.classList.add('active');
+  } else {
+    overlay.classList.remove('active');
+  }
+}
 
-    document.getElementById('login-card').style.display = 'none';
-    document.getElementById('input-area').style.display = 'block';
-    document.getElementById('current-username').textContent = currentUser;
+function setupMaintenanceSecretTrigger() {
+  const overlay = document.getElementById('maintenance-overlay');
+  if (!overlay) return;
 
-    inputSelections = { ...(db.schedules[currentUid]?.days || {}) };
+  overlay.addEventListener('click', () => {
+    if (overlay.dataset.enabled !== 'true' || isAdmin) return;
 
-    updateModeUI();
-    refreshUI();
-    msg.innerHTML = '';
+    maintenanceTapCount += 1;
+
+    if (maintenanceTapTimer) clearTimeout(maintenanceTapTimer);
+    maintenanceTapTimer = setTimeout(() => {
+      maintenanceTapCount = 0;
+    }, 1500);
+
+    if (maintenanceTapCount >= 7) {
+      maintenanceTapCount = 0;
+      openModeModal();
+    }
+  });
+}
+
+function openModeModal() {
+  document.getElementById('mode-modal').classList.add('open');
+  document.getElementById('admin-password-input').value = '';
+  document.getElementById('mode-modal-msg').innerHTML = '';
+  document.getElementById('logout-admin-btn').style.display = isAdmin ? 'block' : 'none';
+  setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
+}
+function closeModeModal() { document.getElementById('mode-modal').classList.remove('open'); }
+
+function toHalf(s) {
+  return (s || '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
+}
+
+async function tryAdminLogin() {
+  const raw = document.getElementById('admin-password-input').value;
+  const pw = toHalf(raw);
+  const pwHash = await sha256Hex(pw);
+  if (pwHash === adminHash) {
+    isAdmin = true;
+    document.getElementById('mode-badge').textContent = '管理者モード';
+    document.getElementById('mode-badge').className = 'badge admin';
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+    closeModeModal();
+    updateMaintenanceOverlay();
+    renderAdminInputTab();
+    renderAdminManageTab();
+  } else {
+    document.getElementById('mode-modal-msg').innerHTML = '<div class="alert alert-error">パスワードが違います。</div>';
+  }
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  document.getElementById('mode-badge').textContent = '閲覧者モード';
+  document.getElementById('mode-badge').className = 'badge';
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  closeModeModal();
+  updateMaintenanceOverlay();
+  showTab('input');
+}
+window.openModeModal = openModeModal;
+window.closeModeModal = closeModeModal;
+window.tryAdminLogin = tryAdminLogin;
+window.logoutAdmin = logoutAdmin;
+
+function loginUser() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const msg = document.getElementById('login-msg');
+  if (!username) { msg.innerHTML = '<div class="alert alert-error">ユーザー名を入力してください。</div>'; return; }
+  if (!db.users[username]) { msg.innerHTML = '<div class="alert alert-error">ユーザーが存在しません。管理者に登録を依頼してください。</div>'; return; }
+  if (db.users[username].password !== password) { msg.innerHTML = '<div class="alert alert-error">パスワードが違います。</div>'; return; }
+
+  currentUser = username;
+  document.getElementById('login-card').style.display = 'none';
+  document.getElementById('input-area').style.display = 'block';
+  document.getElementById('current-username').textContent = username;
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+
+  inputSelections = {};
+  currentInputType = 'full';
+  const sel = document.getElementById('input-type-select');
+  if (sel) sel.value = 'full';
+  const days = db.schedules[username]?.days || {};
+  Object.entries(days).forEach(([date, type]) => { inputSelections[date] = type; });
+
+  renderInputCalendar();
+  renderPermissionList();
+  renderPrivateUserOptions();
+  msg.innerHTML = '';
+}
+
+function logoutUser() {
+  currentUser = null;
+  inputSelections = {};
+  selectedPrivateUser = '';
+  document.getElementById('login-card').style.display = 'block';
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+}
+window.loginUser = loginUser;
+window.logoutUser = logoutUser;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+function toDateStr(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+const todayStr = toDateStr(new Date());
+
+function getDayType(username, dateStr) {
+  return db.schedules[username]?.days?.[dateStr] || '';
+}
+function isAvailableType(type) {
+  return type === 'full' || type === 'am' || type === 'pm';
+}
+function hasAnsweredInMonth(username, year, month) {
+  const sched = db.schedules[username];
+  if (!sched || !sched.days) return false;
+  const prefix = `${year}-${pad(month+1)}-`;
+  return Object.entries(sched.days).some(([date, type]) => date.startsWith(prefix) && isAvailableType(type));
+}
+function getAvailableUsersOnDate(users, dateStr) {
+  return users.filter(u => isAvailableType(getDayType(u, dateStr)));
+}
+function getAnsweredUsersInMonth(users, year, month) {
+  return users.filter(u => hasAnsweredInMonth(u, year, month));
+}
+function getCommonAvailabilityType(users, dateStr) {
+  if (!users.length) return '';
+  const types = users.map(u => getDayType(u, dateStr));
+  if (types.some(t => !isAvailableType(t))) return '';
+  if (types.every(t => t === 'full')) return 'full';
+  if (types.every(t => t === 'am' || t === 'full')) return 'am';
+  if (types.every(t => t === 'pm' || t === 'full')) return 'pm';
+  return '';
+}
+function setInputType(type) { currentInputType = type; }
+
+function renderInputCalendar() {
+  const cal = document.getElementById('input-calendar');
+  const title = document.getElementById('input-cal-title');
+  if (!cal) return;
+  title.textContent = `${inputYear}年 ${inputMonth + 1}月`;
+
+  const DOW = ['日','月','火','水','木','金','土'];
+  let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
+
+  const firstDay = new Date(inputYear, inputMonth, 1).getDay();
+  const daysInMonth = new Date(inputYear, inputMonth + 1, 0).getDate();
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${inputYear}-${pad(inputMonth+1)}-${pad(d)}`;
+    const dow = new Date(inputYear, inputMonth, d).getDay();
+    const dayType = currentUser ? getDayType(currentUser, ds) : '';
+
+    let cls = 'cal-day';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    if (ds === todayStr) cls += ' today';
+    if (dayType === 'full') cls += ' day-free';
+    else if (dayType === 'am') cls += ' day-am';
+    else if (dayType === 'pm') cls += ' day-pm';
+
+    html += `<div class="${cls}" onclick="toggleInputDay('${ds}')" title="${ds}"><span class="day-num">${d}</span></div>`;
+  }
+  cal.innerHTML = html;
+}
+
+function toggleInputDay(ds) {
+  if (!currentUser) return;
+  if (!db.schedules[currentUser]) db.schedules[currentUser] = { days: {}, times: {} };
+  if (!db.schedules[currentUser].days) db.schedules[currentUser].days = {};
+  if (!db.schedules[currentUser].times) db.schedules[currentUser].times = {};
+
+  const currentType = getDayType(currentUser, ds);
+  if (currentType === currentInputType) {
+    delete inputSelections[ds];
+    delete db.schedules[currentUser].days[ds];
+  } else {
+    inputSelections[ds] = currentInputType;
+    db.schedules[currentUser].days[ds] = currentInputType;
+  }
+  renderInputCalendar();
+}
+
+function changeInputMonth(delta) {
+  inputMonth += delta;
+  if (inputMonth < 0) { inputMonth = 11; inputYear--; }
+  if (inputMonth > 11) { inputMonth = 0; inputYear++; }
+  renderInputCalendar();
+}
+
+function clearInputSelection() {
+  if (!confirm('このユーザーの入力内容をクリアしますか？')) return;
+  inputSelections = {};
+  if (!db.schedules[currentUser]) db.schedules[currentUser] = { days: {}, times: {} };
+  db.schedules[currentUser].days = {};
+  db.schedules[currentUser].times = {};
+  saveData();
+  renderInputCalendar();
+}
+
+function saveSchedule() {
+  if (!currentUser) return;
+  if (!db.schedules[currentUser]) db.schedules[currentUser] = { days: {}, times: {} };
+  if (!db.schedules[currentUser].days) db.schedules[currentUser].days = {};
+  if (!db.schedules[currentUser].times) db.schedules[currentUser].times = {};
+
+  Object.keys(db.schedules[currentUser].days).forEach(date => {
+    if (!inputSelections[date]) {
+      delete db.schedules[currentUser].days[date];
+      delete db.schedules[currentUser].times[date];
+    }
+  });
+  Object.entries(inputSelections).forEach(([date, type]) => {
+    db.schedules[currentUser].days[date] = type;
+    if (type !== 'time') delete db.schedules[currentUser].times[date];
   });
 
-  function updateModeUI() {
-    const badge = document.getElementById('mode-badge');
-    if (isAdmin) {
-      badge.textContent = '管理者モード';
-      badge.className = 'badge admin';
-      document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
-    } else {
-      badge.textContent = currentUid ? '利用者モード' : '閲覧者モード';
-      badge.className = 'badge';
-      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    }
+  saveData();
+  showAlert('保存しました！', 'success');
+}
+
+function renderPermissionList() {
+  const el = document.getElementById('permission-list');
+  if (!el || !currentUser) return;
+  const users = Object.keys(db.users).filter(u => u !== currentUser).sort((a,b) => a.localeCompare(b, 'ja'));
+  const allowed = db.permissions[currentUser] || [];
+  if (!users.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">他のユーザーがいません。</p>';
+    return;
   }
+  el.innerHTML = users.map(u => `
+    <label class="permission-chip">
+      <input type="checkbox" value="${u}" ${allowed.includes(u) ? 'checked' : ''}>
+      <span>${u}</span>
+    </label>
+  `).join('');
+}
 
-  function showAlert(text, type='success') {
-    const area = document.getElementById('login-msg');
-    area.innerHTML = `<div class="alert alert-${type}">${text}</div>`;
-    setTimeout(() => {
-      if (area.textContent.includes(text)) area.innerHTML = '';
-    }, 2500);
+function savePermissions() {
+  if (!currentUser) return;
+  const checked = [...document.querySelectorAll('#permission-list input[type="checkbox"]:checked')].map(el => el.value);
+  db.permissions[currentUser] = checked;
+  saveData();
+  showAlert('閲覧許可を保存しました！', 'success');
+}
+
+window.renderInputCalendar = renderInputCalendar;
+window.toggleInputDay = toggleInputDay;
+window.changeInputMonth = changeInputMonth;
+window.clearInputSelection = clearInputSelection;
+window.saveSchedule = saveSchedule;
+window.setInputType = setInputType;
+window.savePermissions = savePermissions;
+
+function getCurrentUserGroups() {
+  if (!currentUser) return [];
+  return Object.entries(db.groups).filter(([, g]) => (g.members || []).includes(currentUser));
+}
+
+function togglePublicGroup(id, checked) {
+  if (checked) {
+    publicGroupIds = [id];
+    document.querySelectorAll('#public-group-selector input[type=checkbox]').forEach(cb => {
+      cb.checked = cb.getAttribute('onchange')?.includes(`'${id}'`) || false;
+    });
+  } else {
+    publicGroupIds = [];
   }
+  renderPublicGroupOptions();
+  renderPublicCalendar();
+}
 
-  function showTab(name, btn) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    if (btn) btn.classList.add('active');
-
-    if (name === 'input') {
-      if (currentUid) {
-        document.getElementById('login-card').style.display = 'none';
-        document.getElementById('input-area').style.display = 'block';
-        renderInputCalendar();
-        renderPermissionList();
-      } else {
-        document.getElementById('login-card').style.display = 'block';
-        document.getElementById('input-area').style.display = 'none';
-      }
-    }
-    if (name === 'public') { updatePublicMonthLabel(); renderPublicGroupOptions(); renderPublicCalendar(); }
-    if (name === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
-    if (name === 'manage' && isAdmin) renderAdminManageTab();
+function renderPublicGroupOptions() {
+  const el = document.getElementById('public-group-selector');
+  if (!el) return;
+  if (!currentUser) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">公開カレンダーを見るにはログインしてください。</p>';
+    document.getElementById('public-calendar-area').style.display = 'none';
+    return;
   }
-  window.showTab = showTab;
-
-  async function loginUser() {
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
-    const msg = document.getElementById('login-msg');
-
-    if (!username || !password) {
-      msg.innerHTML = '<div class="alert alert-error">ユーザー名とパスワードを入力してください。</div>';
-      return;
-    }
-
-    const users = Object.entries(db.users);
-    const found = users.find(([, profile]) => profile.username === username);
-    if (!found) {
-      msg.innerHTML = '<div class="alert alert-error">ユーザーが存在しません。</div>';
-      return;
-    }
-
-    const [, profile] = found;
-    try {
-      await signInWithEmailAndPassword(auth, profile.email, password);
-      document.getElementById('login-username').value = '';
-      document.getElementById('login-password').value = '';
-    } catch (e) {
-      msg.innerHTML = '<div class="alert alert-error">ログインに失敗しました。</div>';
-      console.error(e);
-    }
+  const groups = getCurrentUserGroups();
+  if (!groups.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">所属グループがありません。</p>';
+    document.getElementById('public-calendar-area').style.display = 'none';
+    return;
   }
-
-  async function logoutUser() {
-    await signOut(auth);
-  }
-
-  function getDayType(uid, dateStr) {
-    return db.schedules[uid]?.days?.[dateStr] || '';
-  }
-  function isAvailableType(type) {
-    return type === 'full' || type === 'am' || type === 'pm';
-  }
-  function hasAnsweredInMonth(uid, year, month) {
-    const sched = db.schedules[uid];
-    if (!sched || !sched.days) return false;
-    const prefix = `${year}-${pad(month+1)}-`;
-    return Object.entries(sched.days).some(([date, type]) => date.startsWith(prefix) && isAvailableType(type));
-  }
-  function getAnsweredUsersInMonth(uids, year, month) {
-    return uids.filter(uid => hasAnsweredInMonth(uid, year, month));
-  }
-  function getCommonAvailabilityType(uids, dateStr) {
-    if (!uids.length) return '';
-    const types = uids.map(uid => getDayType(uid, dateStr));
-    if (types.some(t => !isAvailableType(t))) return '';
-    if (types.every(t => t === 'full')) return 'full';
-    if (types.every(t => t === 'am' || t === 'full')) return 'am';
-    if (types.every(t => t === 'pm' || t === 'full')) return 'pm';
-    return '';
-  }
-  function setInputType(type) { currentInputType = type; }
-
-  function renderInputCalendar() {
-    const cal = document.getElementById('input-calendar');
-    const title = document.getElementById('input-cal-title');
-    if (!cal) return;
-    title.textContent = `${inputYear}年 ${inputMonth + 1}月`;
-
-    const DOW = ['日','月','火','水','木','金','土'];
-    let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
-
-    const firstDay = new Date(inputYear, inputMonth, 1).getDay();
-    const daysInMonth = new Date(inputYear, inputMonth + 1, 0).getDate();
-    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const ds = `${inputYear}-${pad(inputMonth+1)}-${pad(d)}`;
-      const dow = new Date(inputYear, inputMonth, d).getDay();
-      const dayType = currentUid ? getDayType(currentUid, ds) : '';
-      let cls = 'cal-day';
-      if (dow === 0) cls += ' sun';
-      if (dow === 6) cls += ' sat';
-      if (ds === todayStr) cls += ' today';
-      if (dayType === 'full') cls += ' day-free';
-      else if (dayType === 'am') cls += ' day-am';
-      else if (dayType === 'pm') cls += ' day-pm';
-      html += `<div class="${cls}" onclick="toggleInputDay('${ds}')" title="${ds}"><span class="day-num">${d}</span></div>`;
-    }
-    cal.innerHTML = html;
-  }
-
-  function toggleInputDay(ds) {
-    if (!currentUid) return;
-    const currentType = inputSelections[ds] || '';
-    if (currentType === currentInputType) delete inputSelections[ds];
-    else inputSelections[ds] = currentInputType;
-    renderInputCalendar();
-  }
-
-  function changeInputMonth(delta) {
-    inputMonth += delta;
-    if (inputMonth < 0) { inputMonth = 11; inputYear--; }
-    if (inputMonth > 11) { inputMonth = 0; inputYear++; }
-    renderInputCalendar();
-  }
-
-  async function clearInputSelection() {
-    if (!currentUid) return;
-    if (!confirm('このユーザーの入力内容をクリアしますか？')) return;
-    inputSelections = {};
-    await set(child(rootRef, `schedules/${currentUid}`), { days: {} });
-    renderInputCalendar();
-  }
-
-  async function saveSchedule() {
-    if (!currentUid) return;
-    await set(child(rootRef, `schedules/${currentUid}`), { days: inputSelections });
-    showAlert('保存しました！', 'success');
-  }
-
-  function getAllUsersSorted() {
-    return Object.entries(db.users)
-      .sort((a, b) => (a[1].displayName || a[1].username || '').localeCompare((b[1].displayName || b[1].username || ''), 'ja'));
-  }
-
-  function renderPermissionList() {
-    const el = document.getElementById('permission-list');
-    if (!el || !currentUid) return;
-    const users = getAllUsersSorted().filter(([uid]) => uid !== currentUid);
-    const allowed = db.permissions[currentUid] || {};
-    if (!users.length) {
-      el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">他のユーザーがいません。</p>';
-      return;
-    }
-    el.innerHTML = users.map(([uid, profile]) => `
-      <label class="permission-chip">
-        <input type="checkbox" value="${uid}" ${allowed[uid] ? 'checked' : ''}>
-        <span>${profile.displayName || profile.username}</span>
-      </label>
-    `).join('');
-  }
-
-  async function savePermissions() {
-    if (!currentUid) return;
-    const checked = [...document.querySelectorAll('#permission-list input[type="checkbox"]:checked')]
-      .reduce((acc, el) => { acc[el.value] = true; return acc; }, {});
-    await set(child(rootRef, `permissions/${currentUid}`), checked);
-    showAlert('閲覧許可を保存しました！', 'success');
-  }
-
-  function getCurrentUserGroups() {
-    if (!currentUid) return [];
-    return Object.entries(db.groups).filter(([, g]) => !!g.members?.[currentUid]);
-  }
-
-  function togglePublicGroup(id, checked) {
-    publicGroupIds = checked ? [id] : [];
-    renderPublicGroupOptions();
-    renderPublicCalendar();
-  }
-
-  function renderPublicGroupOptions() {
-    const el = document.getElementById('public-group-selector');
-    if (!el) return;
-    if (!currentUid) {
-      el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">公開カレンダーを見るにはログインしてください。</p>';
-      document.getElementById('public-calendar-area').style.display = 'none';
-      return;
-    }
-    const groups = getCurrentUserGroups();
-    if (!groups.length) {
-      el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">所属グループがありません。</p>';
-      document.getElementById('public-calendar-area').style.display = 'none';
-      return;
-    }
-    publicGroupIds = publicGroupIds.filter(id => groups.some(([gid]) => gid === id));
-    el.innerHTML = groups.map(([id, g]) => {
-      const memberRows = Object.keys(g.members || {}).map(uid => {
-        const name = db.users[uid]?.displayName || db.users[uid]?.username || uid;
-        const unanswered = hasAnsweredInMonth(uid, publicYear, publicMonth) ? '' : ' <span style="color:#dc2626;font-weight:700;">未回答</span>';
-        return `<div style="font-size:0.82rem;color:#374151;padding-left:38px;">- ${name}${unanswered}</div>`;
-      }).join('');
-      return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--bg);margin-bottom:8px;">
-        <label class="user-item" style="cursor:pointer;background:white;margin-bottom:${Object.keys(g.members||{}).length ? '8px' : '0'};">
-          <input type="checkbox" ${publicGroupIds.includes(id)?'checked':''} onchange="togglePublicGroup('${id}',this.checked)">
-          <div class="user-avatar">${(g.name[0]||'G').toUpperCase()}</div>
-          <span class="user-name">${g.name}</span>
-        </label>
-        ${memberRows}
-      </div>`;
+  publicGroupIds = publicGroupIds.filter(id => groups.some(([gid]) => gid === id));
+  el.innerHTML = groups.map(([id, g]) => {
+    const memberRows = (g.members || []).map(name => {
+      const unanswered = hasAnsweredInMonth(name, publicYear, publicMonth) ? '' : ' <span style="color:#dc2626;font-weight:700;">未回答</span>';
+      return `<div style="font-size:0.82rem;color:#374151;padding-left:38px;">- ${name}${unanswered}</div>`;
     }).join('');
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--bg);margin-bottom:8px;">
+      <label class="user-item" style="cursor:pointer;background:white;margin-bottom:${(g.members||[]).length ? '8px' : '0'};">
+        <input type="checkbox" ${publicGroupIds.includes(id)?'checked':''} onchange="togglePublicGroup('${id}',this.checked)">
+        <div class="user-avatar">${(g.name[0]||'G').toUpperCase()}</div>
+        <span class="user-name">${g.name}</span>
+      </label>
+      ${memberRows}
+    </div>`;
+  }).join('');
+  renderPublicCalendar();
+}
+
+function renderPublicCalendar() {
+  const area = document.getElementById('public-calendar-area');
+  if (!currentUser || !publicGroupIds.length) { area.style.display = 'none'; return; }
+
+  const groups = publicGroupIds.map(id => db.groups[id]).filter(Boolean);
+  const members = [...new Set(groups.flatMap(g => g.members || []))];
+
+  document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
+  area.style.display = 'block';
+  document.getElementById('public-cal-title').textContent = `${publicYear}年 ${publicMonth + 1}月`;
+
+  const dim = new Date(publicYear, publicMonth + 1, 0).getDate();
+  const firstDay = new Date(publicYear, publicMonth, 1).getDay();
+  const answeredUsers = getAnsweredUsersInMonth(members, publicYear, publicMonth);
+
+  if (answeredUsers.length <= 1) {
+    document.getElementById('public-calendar').innerHTML = '';
+    document.getElementById('public-output-list').innerHTML =
+      '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
+    return;
   }
 
-  function renderPublicCalendar() {
-    const area = document.getElementById('public-calendar-area');
-    if (!currentUid || !publicGroupIds.length) { area.style.display = 'none'; return; }
+  const DOW = ['日','月','火','水','木','金','土'];
+  let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
 
-    const groups = publicGroupIds.map(id => db.groups[id]).filter(Boolean);
-    const memberUids = [...new Set(groups.flatMap(g => Object.keys(g.members || {})))];
-    document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
-    area.style.display = 'block';
-    document.getElementById('public-cal-title').textContent = `${publicYear}年 ${publicMonth + 1}月`;
+  let listHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  let found = false;
 
-    const dim = new Date(publicYear, publicMonth + 1, 0).getDate();
-    const firstDay = new Date(publicYear, publicMonth, 1).getDay();
-    const answeredUsers = getAnsweredUsersInMonth(memberUids, publicYear, publicMonth);
+  for (let d = 1; d <= dim; d++) {
+    const ds = `${publicYear}-${pad(publicMonth+1)}-${pad(d)}`;
+    const dow = new Date(publicYear, publicMonth, d).getDay();
+    const commonType = getCommonAvailabilityType(answeredUsers, ds);
 
-    if (answeredUsers.length <= 1) {
-      document.getElementById('public-calendar').innerHTML = '';
-      document.getElementById('public-output-list').innerHTML = '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
-      return;
-    }
+    let cls = 'cal-day';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    if (ds === todayStr) cls += ' today';
 
-    const DOW = ['日','月','火','水','木','金','土'];
-    let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
-    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+    if (commonType === 'full') cls += ' common-all';
+    else if (commonType === 'am') cls += ' day-am';
+    else if (commonType === 'pm') cls += ' day-pm';
+    else cls += ' common-none';
 
-    let listHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
-    let found = false;
+    html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
 
-    for (let d = 1; d <= dim; d++) {
-      const ds = `${publicYear}-${pad(publicMonth+1)}-${pad(d)}`;
-      const dow = new Date(publicYear, publicMonth, d).getDay();
-      const commonType = getCommonAvailabilityType(answeredUsers, ds);
-      let cls = 'cal-day';
-      if (dow === 0) cls += ' sun';
-      if (dow === 6) cls += ' sat';
-      if (ds === todayStr) cls += ' today';
-      if (commonType === 'full') cls += ' common-all';
-      else if (commonType === 'am') cls += ' day-am';
-      else if (commonType === 'pm') cls += ' day-pm';
-      else cls += ' common-none';
-      html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
-
-      if (commonType) {
-        found = true;
-        const dowStr = ['日','月','火','水','木','金','土'][dow];
-        const label = commonType === 'full' ? '一日' : (commonType === 'am' ? '午前' : '午後');
-        listHtml += `<div class="output-day">📅 ${ds}（${dowStr}） ${label}</div>`;
-      }
-    }
-    listHtml += '</div>';
-    if (!found) listHtml = '<p style="color:var(--muted);">この月に共通の空き日はありません。</p>';
-
-    document.getElementById('public-calendar').innerHTML = html;
-    document.getElementById('public-output-list').innerHTML = listHtml;
-  }
-
-  function changePublicMonth(delta) {
-    publicMonth += delta;
-    if (publicMonth < 0) { publicMonth = 11; publicYear--; }
-    if (publicMonth > 11) { publicMonth = 0; publicYear++; }
-    updatePublicMonthLabel();
-    renderPublicGroupOptions();
-    renderPublicCalendar();
-  }
-
-  function updatePublicMonthLabel() {
-    const el = document.getElementById('public-month-label');
-    if (el) el.textContent = `${publicYear}年 ${publicMonth + 1}月`;
-  }
-
-  function getViewableUsers() {
-    if (!currentUid) return [];
-    return getAllUsersSorted().filter(([uid]) => uid !== currentUid && !!db.permissions[uid]?.[currentUid]);
-  }
-
-  function renderPrivateUserOptions() {
-    const select = document.getElementById('private-user-select');
-    const area = document.getElementById('private-calendar-area');
-    if (!select || !area) return;
-    if (!currentUid) {
-      select.innerHTML = '<option value="">ログインしてください</option>';
-      area.style.display = 'none';
-      return;
-    }
-    const users = getViewableUsers();
-    if (!users.length) {
-      selectedPrivateUser = '';
-      select.innerHTML = '<option value="">閲覧できるユーザーがいません</option>';
-      area.style.display = 'none';
-      return;
-    }
-    if (!users.some(([uid]) => uid === selectedPrivateUser)) selectedPrivateUser = users[0][0];
-    select.innerHTML = users.map(([uid, profile]) => `<option value="${uid}" ${uid===selectedPrivateUser ? 'selected' : ''}>${profile.displayName || profile.username}</option>`).join('');
-    area.style.display = selectedPrivateUser ? 'block' : 'none';
-  }
-
-  function selectPrivateUser(uid) {
-    selectedPrivateUser = uid;
-    renderPrivateCalendar();
-  }
-
-  function renderPrivateCalendar() {
-    const cal = document.getElementById('private-calendar');
-    const title = document.getElementById('private-cal-title');
-    const area = document.getElementById('private-calendar-area');
-    if (!cal || !title || !area) return;
-    if (!currentUid || !selectedPrivateUser || !db.permissions[selectedPrivateUser]?.[currentUid]) {
-      area.style.display = 'none';
-      return;
-    }
-    area.style.display = 'block';
-    const profile = db.users[selectedPrivateUser] || {};
-    title.textContent = `${profile.displayName || profile.username || 'ユーザー'} の予定 - ${privateYear}年 ${privateMonth + 1}月`;
-
-    const DOW = ['日','月','火','水','木','金','土'];
-    let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
-    const firstDay = new Date(privateYear, privateMonth, 1).getDay();
-    const daysInMonth = new Date(privateYear, privateMonth + 1, 0).getDate();
-    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const ds = `${privateYear}-${pad(privateMonth+1)}-${pad(d)}`;
-      const dow = new Date(privateYear, privateMonth, d).getDay();
-      const dayType = getDayType(selectedPrivateUser, ds);
-      let cls = 'cal-day';
-      if (dow === 0) cls += ' sun';
-      if (dow === 6) cls += ' sat';
-      if (ds === todayStr) cls += ' today';
-      if (dayType === 'full') cls += ' day-free';
-      else if (dayType === 'am') cls += ' day-am';
-      else if (dayType === 'pm') cls += ' day-pm';
-      html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
-    }
-    cal.innerHTML = html;
-  }
-
-  function changePrivateMonth(delta) {
-    privateMonth += delta;
-    if (privateMonth < 0) { privateMonth = 11; privateYear--; }
-    if (privateMonth > 11) { privateMonth = 0; privateYear++; }
-    renderPrivateCalendar();
-  }
-
-  async function addUser() {
-    if (!isAdmin) return;
-    const displayName = document.getElementById('admin-new-displayname').value.trim();
-    const username = document.getElementById('admin-new-username').value.trim();
-    const email = document.getElementById('admin-new-email').value.trim();
-    const password = document.getElementById('admin-new-password').value;
-
-    if (!displayName || !username || !email || !password) {
-      alert('すべて入力してください。');
-      return;
-    }
-
-    if (Object.values(db.users).some(u => u.username === username)) {
-      alert('同じログインIDがすでにあります。');
-      return;
-    }
-
-    const adminEmail = auth.currentUser?.email;
-    const adminPassword = prompt('管理者の再ログイン用パスワードを入力してください。\n※ Firebase Auth の仕様上、ユーザー作成後に管理者へ戻すために使います。');
-    if (!adminEmail || !adminPassword) {
-      alert('管理者情報が不足しています。');
-      return;
-    }
-
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      const newUid = cred.user.uid;
-      await set(child(rootRef, `users/${newUid}`), { displayName, username, email });
-      await set(child(rootRef, `schedules/${newUid}`), { days: {} });
-      await set(child(rootRef, `permissions/${newUid}`), {});
-      await signOut(auth);
-      await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-
-      document.getElementById('admin-new-displayname').value = '';
-      document.getElementById('admin-new-username').value = '';
-      document.getElementById('admin-new-email').value = '';
-      document.getElementById('admin-new-password').value = '';
-      alert('ユーザーを追加しました。');
-    } catch (e) {
-      console.error(e);
-      alert('ユーザー追加に失敗しました。Firebase Authentication と設定を確認してください。');
+    if (commonType) {
+      found = true;
+      const dowStr = ['日','月','火','水','木','金','土'][dow];
+      const label = commonType === 'full' ? '一日' : (commonType === 'am' ? '午前' : '午後');
+      listHtml += `<div class="output-day">📅 ${ds}（${dowStr}） ${label}</div>`;
     }
   }
+  listHtml += '</div>';
+  if (!found) listHtml = '<p style="color:var(--muted);">この月に共通の空き日はありません。</p>';
 
-  async function addGroup() {
-    if (!isAdmin) return;
-    const nameInput = document.getElementById('admin-group-name');
-    const name = nameInput.value.trim();
-    if (!name) { alert('グループ名を入力してください。'); return; }
-    if (Object.values(db.groups).some(g => g.name === name)) { alert('同じグループ名がすでにあります。'); return; }
-    const id = 'g_' + Date.now();
-    await set(child(rootRef, `groups/${id}`), { name, members: {} });
-    nameInput.value = '';
+  document.getElementById('public-calendar').innerHTML = html;
+  document.getElementById('public-output-list').innerHTML = listHtml;
+}
+
+function changePublicMonth(delta) {
+  publicMonth += delta;
+  if (publicMonth < 0) { publicMonth = 11; publicYear--; }
+  if (publicMonth > 11) { publicMonth = 0; publicYear++; }
+  updatePublicMonthLabel();
+  renderPublicGroupOptions();
+  renderPublicCalendar();
+}
+
+function updatePublicMonthLabel() {
+  const el = document.getElementById('public-month-label');
+  if (el) el.textContent = `${publicYear}年 ${publicMonth + 1}月`;
+}
+window.togglePublicGroup = togglePublicGroup;
+window.renderPublicGroupOptions = renderPublicGroupOptions;
+window.renderPublicCalendar = renderPublicCalendar;
+window.changePublicMonth = changePublicMonth;
+window.updatePublicMonthLabel = updatePublicMonthLabel;
+
+function getViewableUsers() {
+  if (!currentUser) return [];
+  return Object.keys(db.users).filter(username => username !== currentUser && (db.permissions[username] || []).includes(currentUser)).sort((a,b) => a.localeCompare(b, 'ja'));
+}
+
+function renderPrivateUserOptions() {
+  const select = document.getElementById('private-user-select');
+  const area = document.getElementById('private-calendar-area');
+  if (!select || !area) return;
+  if (!currentUser) {
+    select.innerHTML = '<option value="">ログインしてください</option>';
+    area.style.display = 'none';
+    return;
   }
-
-  async function deleteGroup(id) {
-    if (!isAdmin || !db.groups[id]) return;
-    if (!confirm(`グループ "${db.groups[id].name}" を削除しますか？`)) return;
-    await set(child(rootRef, `groups/${id}`), null);
+  const users = getViewableUsers();
+  if (!users.length) {
+    selectedPrivateUser = '';
+    select.innerHTML = '<option value="">閲覧できるユーザーがいません</option>';
+    area.style.display = 'none';
+    return;
   }
+  if (!users.includes(selectedPrivateUser)) selectedPrivateUser = users[0];
+  select.innerHTML = users.map(u => `<option value="${u}" ${u===selectedPrivateUser ? 'selected' : ''}>${u}</option>`).join('');
+  area.style.display = selectedPrivateUser ? 'block' : 'none';
+}
 
-  async function toggleGroupMember(groupId, uid) {
-    if (!isAdmin) return;
-    const group = db.groups[groupId];
-    if (!group) return;
-    const members = { ...(group.members || {}) };
-    if (members[uid]) delete members[uid];
-    else members[uid] = true;
-    await update(child(rootRef, `groups/${groupId}`), { members });
+function selectPrivateUser(username) {
+  selectedPrivateUser = username;
+  renderPrivateCalendar();
+}
+
+function renderPrivateCalendar() {
+  const cal = document.getElementById('private-calendar');
+  const title = document.getElementById('private-cal-title');
+  const area = document.getElementById('private-calendar-area');
+  if (!cal || !title || !area) return;
+  if (!currentUser || !selectedPrivateUser || !(db.permissions[selectedPrivateUser] || []).includes(currentUser)) {
+    area.style.display = 'none';
+    return;
   }
+  area.style.display = 'block';
+  title.textContent = `${selectedPrivateUser} の予定 - ${privateYear}年 ${privateMonth + 1}月`;
 
-  function renderAdminUserList() {
-    const el = document.getElementById('admin-user-list');
-    const users = getAllUsersSorted();
-    if (!users.length) { el.innerHTML = '<p style="color:var(--muted);">ユーザーがいません。</p>'; return; }
-    const colors = ['#2563eb','#7c3aed','#16a34a','#dc2626','#d97706','#0891b2','#be185d','#65a30d'];
-    el.innerHTML = users.map(([uid, u], i) => `
-      <div class="user-item" style="flex-wrap:wrap;align-items:center;">
-        <div class="user-avatar" style="background:${colors[i%colors.length]}">${(u.displayName || u.username || '?')[0].toUpperCase()}</div>
-        <span class="user-name">${u.displayName || ''} / ${u.username || ''} / ${u.email || ''}</span>
-        ${db.admins[uid] ? '<span class="badge admin">管理者</span>' : ''}
-      </div>`).join('');
+  const DOW = ['日','月','火','水','木','金','土'];
+  let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
+
+  const firstDay = new Date(privateYear, privateMonth, 1).getDay();
+  const daysInMonth = new Date(privateYear, privateMonth + 1, 0).getDate();
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${privateYear}-${pad(privateMonth+1)}-${pad(d)}`;
+    const dow = new Date(privateYear, privateMonth, d).getDay();
+    const dayType = getDayType(selectedPrivateUser, ds);
+
+    let cls = 'cal-day';
+    if (dow === 0) cls += ' sun';
+    if (dow === 6) cls += ' sat';
+    if (ds === todayStr) cls += ' today';
+    if (dayType === 'full') cls += ' day-free';
+    else if (dayType === 'am') cls += ' day-am';
+    else if (dayType === 'pm') cls += ' day-pm';
+
+    html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
   }
+  cal.innerHTML = html;
+}
 
-  function renderAdminGroupList() {
-    const el = document.getElementById('admin-group-list');
-    const groups = Object.entries(db.groups).sort((a,b) => a[1].name.localeCompare(b[1].name,'ja'));
-    if (!groups.length) { el.innerHTML = '<p style="color:var(--muted);">グループがありません。</p>'; return; }
-    const users = getAllUsersSorted();
-    el.innerHTML = groups.map(([id, g]) => `
-      <div class="group-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-          <strong>${g.name}</strong>
-          <button class="btn btn-danger btn-sm" onclick="deleteGroup('${id}')">削除</button>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          ${users.map(([uid, u]) => `
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.85rem;
-              padding:4px 8px;border-radius:6px;
-              border:1.5px solid ${g.members?.[uid]?'#2563eb':'var(--border)'};
-              background:${g.members?.[uid]?'#dbeafe':'white'};">
-              <input type="checkbox" ${g.members?.[uid]?'checked':''} onchange="toggleGroupMember('${id}','${uid}')">
-              ${u.displayName || u.username}
-            </label>`).join('')}
-        </div>
-        <div style="font-size:0.8rem;color:var(--muted);">メンバー: ${Object.keys(g.members||{}).map(uid => db.users[uid]?.displayName || db.users[uid]?.username || uid).join(', ') || 'なし'}</div>
-      </div>`).join('');
-  }
+function changePrivateMonth(delta) {
+  privateMonth += delta;
+  if (privateMonth < 0) { privateMonth = 11; privateYear--; }
+  if (privateMonth > 11) { privateMonth = 0; privateYear++; }
+  renderPrivateCalendar();
+}
+window.selectPrivateUser = selectPrivateUser;
+window.changePrivateMonth = changePrivateMonth;
 
-  function renderAdminManageTab() {
-    renderAdminUserList();
-    renderAdminGroupList();
-  }
+function renderAdminInputTab() { }
 
-  function refreshUI() {
-    const activeTab = document.querySelector('.section.active');
-    const tabId = activeTab ? activeTab.id.replace('tab-', '') : 'input';
-    if (tabId === 'input' && currentUid) { renderInputCalendar(); renderPermissionList(); }
-    if (tabId === 'public') { renderPublicGroupOptions(); renderPublicCalendar(); }
-    if (tabId === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
-    if (tabId === 'manage' && isAdmin) renderAdminManageTab();
-  }
+function renderAdminManageTab() {
+  renderAdminUserList();
+  renderAdminGroupList();
+}
 
-  window.loginUser = loginUser;
-  window.logoutUser = logoutUser;
-  window.setInputType = setInputType;
-  window.renderInputCalendar = renderInputCalendar;
-  window.toggleInputDay = toggleInputDay;
-  window.changeInputMonth = changeInputMonth;
-  window.clearInputSelection = clearInputSelection;
-  window.saveSchedule = saveSchedule;
-  window.savePermissions = savePermissions;
-  window.togglePublicGroup = togglePublicGroup;
-  window.changePublicMonth = changePublicMonth;
-  window.updatePublicMonthLabel = updatePublicMonthLabel;
-  window.selectPrivateUser = selectPrivateUser;
-  window.changePrivateMonth = changePrivateMonth;
-  window.addUser = addUser;
-  window.addGroup = addGroup;
-  window.deleteGroup = deleteGroup;
-  window.toggleGroupMember = toggleGroupMember;
+function addUser() {
+  const nameInput = document.getElementById('admin-new-username');
+  const passInput = document.getElementById('admin-new-password');
+  const name = nameInput.value.trim();
+  const pass = passInput.value;
+  if (!name) { alert('ユーザー名を入力してください。'); return; }
+  if (!pass) { alert('パスワードを入力してください。'); return; }
+  if (db.users[name]) { alert('すでに存在するユーザー名です。'); return; }
+  nameInput.value = ''; passInput.value = '';
+  db.users[name] = { password: pass };
+  if (!db.schedules[name]) db.schedules[name] = { days: {}, times: {} };
+  if (!Array.isArray(db.permissions[name])) db.permissions[name] = [];
+  saveData();
+  renderAdminManageTab();
+}
 
-  window.addEventListener('DOMContentLoaded', () => {
-    renderInputCalendar();
-    updatePublicMonthLabel();
+function deleteUser(name) {
+  if (!confirm(`"${name}" を削除しますか？`)) return;
+  delete db.users[name];
+  delete db.schedules[name];
+  delete db.permissions[name];
+  Object.keys(db.permissions).forEach(owner => {
+    db.permissions[owner] = (db.permissions[owner] || []).filter(u => u !== name);
   });
+  Object.values(db.groups).forEach(g => { g.members = (g.members||[]).filter(m => m !== name); });
+  saveData();
+  renderAdminManageTab();
+}
+
+function changeUserName(username) {
+  const newName = prompt(`"${username}" の新しい名前を入力してください。`);
+  if (!newName) return;
+  const trimmed = newName.trim();
+  if (!trimmed) { alert('名前を入力してください。'); return; }
+  if (trimmed === username) return;
+  if (db.users[trimmed]) { alert('その名前はすでに使われています。'); return; }
+
+  db.users[trimmed] = db.users[username];
+  delete db.users[username];
+
+  if (db.schedules[username]) {
+    db.schedules[trimmed] = db.schedules[username];
+    delete db.schedules[username];
+  }
+
+  if (db.permissions[username]) {
+    db.permissions[trimmed] = db.permissions[username];
+    delete db.permissions[username];
+  }
+  Object.keys(db.permissions).forEach(owner => {
+    db.permissions[owner] = (db.permissions[owner] || []).map(m => m === username ? trimmed : m);
+  });
+
+  Object.values(db.groups).forEach(g => {
+    if (!Array.isArray(g.members)) return;
+    g.members = g.members.map(m => m === username ? trimmed : m);
+  });
+
+  if (currentUser === username) {
+    currentUser = trimmed;
+    const el = document.getElementById('current-username');
+    if (el) el.textContent = trimmed;
+  }
+  if (selectedPrivateUser === username) selectedPrivateUser = trimmed;
+
+  saveData();
+  renderAdminManageTab();
+  alert('名前を変更しました。');
+}
+
+function changeUserPassword(username) {
+  const newPass = prompt(`"${username}" の新しいパスワードを入力してください。`);
+  if (!newPass) return;
+  db.users[username].password = newPass;
+  saveData();
+  renderAdminUserList();
+  alert('パスワードを変更しました。');
+}
+
+function togglePasswordVisibility(username) {
+  const el = document.getElementById(`pw-text-${username}`);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'inline-block' : 'none';
+}
+
+function renderAdminUserList() {
+  const el = document.getElementById('admin-user-list');
+  const users = Object.keys(db.users).sort((a,b) => a.localeCompare(b,'ja'));
+  if (!users.length) { el.innerHTML = '<p style="color:var(--muted);">ユーザーがいません。</p>'; return; }
+  const colors = ['#2563eb','#7c3aed','#16a34a','#dc2626','#d97706','#0891b2','#be185d','#65a30d'];
+  el.innerHTML = users.map((u, i) => `
+    <div class="user-item" style="flex-wrap:wrap;align-items:center;">
+      <div class="user-avatar" style="background:${colors[i%colors.length]}">${u[0].toUpperCase()}</div>
+      <span class="user-name">${u}</span>
+      <span class="pw-text" id="pw-text-${u}" style="display:none;">${db.users[u].password || ''}</span>
+      <button class="btn btn-secondary btn-sm" onclick="togglePasswordVisibility('${u}')">👁</button>
+      <button class="btn btn-secondary btn-sm" onclick="changeUserName('${u}')">名前変更</button>
+      <button class="btn btn-secondary btn-sm" onclick="changeUserPassword('${u}')">PW変更</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteUser('${u}')">削除</button>
+    </div>`).join('');
+}
+
+function addGroup() {
+  const nameInput = document.getElementById('admin-group-name');
+  const name = nameInput.value.trim();
+  if (!name) { alert('グループ名を入力してください。'); return; }
+  if (Object.values(db.groups).some(g => g.name === name)) { alert('同じグループ名がすでにあります。'); nameInput.value=''; return; }
+  nameInput.value = '';
+  const id = 'g_' + Date.now();
+  db.groups[id] = { name, members: [] };
+  saveData();
+  renderAdminManageTab();
+}
+
+function deleteGroup(id) {
+  if (!db.groups[id]) return;
+  if (!confirm(`グループ "${db.groups[id].name}" を削除しますか？`)) return;
+  delete db.groups[id];
+  saveData();
+  renderAdminManageTab();
+}
+
+function toggleGroupMember(groupId, username) {
+  const group = db.groups[groupId];
+  if (!group) return;
+  if (!Array.isArray(group.members)) group.members = [];
+  if (group.members.includes(username)) {
+    group.members = group.members.filter(m => m !== username);
+  } else {
+    group.members.push(username);
+  }
+  saveData();
+  renderAdminManageTab();
+}
+
+function renderAdminGroupList() {
+  const el = document.getElementById('admin-group-list');
+  const groups = Object.entries(db.groups).sort((a,b) => a[1].name.localeCompare(b[1].name,'ja'));
+  if (!groups.length) { el.innerHTML = '<p style="color:var(--muted);">グループがありません。</p>'; return; }
+  const users = Object.keys(db.users).sort((a,b) => a.localeCompare(b,'ja'));
+  el.innerHTML = groups.map(([id, g]) => `
+    <div class="group-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <strong>${g.name}</strong>
+        <button class="btn btn-danger btn-sm" onclick="deleteGroup('${id}')">削除</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        ${users.map(u => `
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.85rem;
+            padding:4px 8px;border-radius:6px;
+            border:1.5px solid ${(g.members||[]).includes(u)?'#2563eb':'var(--border)'};
+            background:${(g.members||[]).includes(u)?'#dbeafe':'white'};">
+            <input type="checkbox" ${(g.members||[]).includes(u)?'checked':''} onchange="toggleGroupMember('${id}','${u}')">
+            ${u}
+          </label>`).join('')}
+        ${!users.length ? '<span style="color:var(--muted);">ユーザーがいません</span>' : ''}
+      </div>
+      <div style="font-size:0.8rem;color:var(--muted);">メンバー: ${(g.members||[]).length>0 ? (g.members||[]).join(', ') : 'なし'}</div>
+    </div>`).join('');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `schedule-data-${toDateStr(new Date())}.json`;
+  a.click();
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (imported.users && imported.groups && imported.schedules) {
+        db = normalizeDB(imported);
+        saveData();
+        renderAdminManageTab();
+        alert('データを読み込みました。');
+      } else { alert('無効なデータ形式です。'); }
+    } catch { alert('ファイルの読み込みに失敗しました。'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetAll() {
+  db = getDefaultData();
+  saveData();
+  logoutUser();
+  renderAdminManageTab();
+  alert('全データをリセットしました。');
+}
+
+function showAlert(message, type) {
+  const div = document.createElement('div');
+  div.className = `alert alert-${type}`;
+  div.textContent = message;
+  div.style.position = 'fixed';
+  div.style.right = '20px';
+  div.style.bottom = '20px';
+  div.style.zIndex = '100001';
+  div.style.boxShadow = '0 10px 25px rgba(0,0,0,0.12)';
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 2200);
+}
+
+window.addUser = addUser;
+window.deleteUser = deleteUser;
+window.changeUserName = changeUserName;
+window.changeUserPassword = changeUserPassword;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.addGroup = addGroup;
+window.deleteGroup = deleteGroup;
+window.toggleGroupMember = toggleGroupMember;
+window.exportData = exportData;
+window.importData = importData;
+window.resetAll = resetAll;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await ensureAdminHash();
+  renderInputCalendar();
+  setupMaintenanceSecretTrigger();
+  updateMaintenanceOverlay();
+  updatePublicMonthLabel();
+
+  let titleTapCount = 0;
+  let titleTapTimer = null;
+  const appTitle = document.getElementById('app-title');
+  if (appTitle) {
+    appTitle.addEventListener('click', () => {
+      if (isAdmin) return;
+      titleTapCount += 1;
+      if (titleTapTimer) clearTimeout(titleTapTimer);
+      titleTapTimer = setTimeout(() => { titleTapCount = 0; }, 1500);
+      if (titleTapCount >= 7) {
+        titleTapCount = 0;
+        openModeModal();
+      }
+    });
+  }
+});
 </script>
 </body>
 </html>
