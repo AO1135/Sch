@@ -182,12 +182,12 @@
 <body>
 
 <!-- メンテナンス画面 -->
-<!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
+<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>
 
 <header>
-  <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
+  <h1 id="app-title" style="cursor:pointer;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
-    <span class="badge" id="mode-badge">閲覧者モード</span>
+    <span class="badge" id="mode-badge" style="cursor:pointer;user-select:none;">閲覧者モード</span>
   </div>
 </header>
 
@@ -563,26 +563,36 @@ function openModeModal() {
 function closeModeModal() { document.getElementById('mode-modal').classList.remove('open'); }
 
 function setupTitleSecretTrigger() {
-  let titleTapCount = 0;
-  let titleTapTimer = null;
+  let secretTapCount = 0;
+  let secretTapTimer = null;
   const appTitle = document.getElementById('app-title');
-  if (!appTitle) return;
+  const modeBadge = document.getElementById('mode-badge');
 
-  const handleTap = () => {
+  const handleTap = (event) => {
     if (isAdmin) return;
-    titleTapCount += 1;
-    if (titleTapTimer) clearTimeout(titleTapTimer);
-    titleTapTimer = setTimeout(() => {
-      titleTapCount = 0;
-    }, 1500);
-    if (titleTapCount >= 7) {
-      titleTapCount = 0;
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    secretTapCount += 1;
+    if (secretTapTimer) clearTimeout(secretTapTimer);
+    secretTapTimer = setTimeout(() => {
+      secretTapCount = 0;
+    }, 4000);
+    if (secretTapCount >= 7) {
+      secretTapCount = 0;
       openModeModal();
     }
   };
 
-  appTitle.addEventListener('click', handleTap);
-  appTitle.addEventListener('touchstart', handleTap, { passive: true });
+  [appTitle, modeBadge].forEach(el => {
+    if (!el) return;
+    el.style.cursor = 'pointer';
+    el.style.userSelect = 'none';
+    el.onclick = handleTap;
+    el.ontouchstart = handleTap;
+    el.onpointerdown = handleTap;
+  });
 }
 
 function toHalf(s) {
@@ -1247,14 +1257,20 @@ window.exportData = exportData;
 window.importData = importData;
 window.resetAll = resetAll;
 
-window.addEventListener('DOMContentLoaded', async () => {
+async function initApp() {
   await ensureAdminHash();
   renderInputCalendar();
   setupMaintenanceSecretTrigger();
   setupTitleSecretTrigger();
   updateMaintenanceOverlay();
   updatePublicMonthLabel();
-});
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initApp, { once: true });
+} else {
+  initApp();
+}
 </script>
 </body>
 </html>
