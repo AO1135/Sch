@@ -562,6 +562,29 @@ function openModeModal() {
 }
 function closeModeModal() { document.getElementById('mode-modal').classList.remove('open'); }
 
+function setupTitleSecretTrigger() {
+  let titleTapCount = 0;
+  let titleTapTimer = null;
+  const appTitle = document.getElementById('app-title');
+  if (!appTitle) return;
+
+  const handleTap = () => {
+    if (isAdmin) return;
+    titleTapCount += 1;
+    if (titleTapTimer) clearTimeout(titleTapTimer);
+    titleTapTimer = setTimeout(() => {
+      titleTapCount = 0;
+    }, 1500);
+    if (titleTapCount >= 7) {
+      titleTapCount = 0;
+      openModeModal();
+    }
+  };
+
+  appTitle.addEventListener('click', handleTap);
+  appTitle.addEventListener('touchstart', handleTap, { passive: true });
+}
+
 function toHalf(s) {
   return (s || '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
 }
@@ -1228,24 +1251,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   await ensureAdminHash();
   renderInputCalendar();
   setupMaintenanceSecretTrigger();
+  setupTitleSecretTrigger();
   updateMaintenanceOverlay();
   updatePublicMonthLabel();
-
-  let titleTapCount = 0;
-  let titleTapTimer = null;
-  const appTitle = document.getElementById('app-title');
-  if (appTitle) {
-    appTitle.addEventListener('click', () => {
-      if (isAdmin) return;
-      titleTapCount += 1;
-      if (titleTapTimer) clearTimeout(titleTapTimer);
-      titleTapTimer = setTimeout(() => { titleTapCount = 0; }, 1500);
-      if (titleTapCount >= 7) {
-        titleTapCount = 0;
-        openModeModal();
-      }
-    });
-  }
 });
 </script>
 </body>
