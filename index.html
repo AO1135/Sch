@@ -434,8 +434,8 @@ let publicGroupIds = [];
 let adminHash = null;
 let maintenanceTapCount = 0;
 let maintenanceTapTimer = null;
-let adminSecretTapCount = 0;
-let adminSecretTapTimer = null;
+let adminLongPressTimer = null;
+let adminLongPressTriggered = false;
 let selectedPrivateUser = '';
 
 async function sha256Hex(text) {
@@ -534,39 +534,58 @@ function updateMaintenanceOverlay() {
   }
 }
 
-function registerAdminSecretTap(source) {
-  if (isAdmin) return;
-  adminSecretTapCount += 1;
-  if (adminSecretTapTimer) clearTimeout(adminSecretTapTimer);
-  adminSecretTapTimer = setTimeout(() => {
-    adminSecretTapCount = 0;
-  }, 5000);
-  if (adminSecretTapCount >= 7) {
-    adminSecretTapCount = 0;
-    openModeModal();
+function clearAdminLongPressTimer() {
+  if (adminLongPressTimer) {
+    clearTimeout(adminLongPressTimer);
+    adminLongPressTimer = null;
   }
 }
 
-function bindSecretTap(el) {
+function bindLongPressTrigger(el) {
   if (!el) return;
-  const handler = (event) => {
+
+  const startPress = (event) => {
+    if (isAdmin) return;
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
-    registerAdminSecretTap(el.id || el.className || 'secret');
+    adminLongPressTriggered = false;
+    clearAdminLongPressTimer();
+    adminLongPressTimer = setTimeout(() => {
+      adminLongPressTriggered = true;
+      openModeModal();
+    }, 1500);
   };
+
+  const endPress = (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    clearAdminLongPressTimer();
+  };
+
   el.style.pointerEvents = 'auto';
-  el.style.touchAction = 'manipulation';
-  el.addEventListener('click', handler, true);
-  el.addEventListener('touchstart', handler, { passive: false, capture: true });
-  el.addEventListener('pointerdown', handler, true);
+  el.style.touchAction = 'none';
+  el.style.userSelect = 'none';
+  el.style.webkitUserSelect = 'none';
+
+  el.addEventListener('mousedown', startPress, true);
+  el.addEventListener('mouseup', endPress, true);
+  el.addEventListener('mouseleave', endPress, true);
+  el.addEventListener('touchstart', startPress, { passive: false, capture: true });
+  el.addEventListener('touchend', endPress, { passive: false, capture: true });
+  el.addEventListener('touchcancel', endPress, { passive: false, capture: true });
+  el.addEventListener('pointerdown', startPress, true);
+  el.addEventListener('pointerup', endPress, true);
+  el.addEventListener('pointercancel', endPress, true);
 }
 
 function setupMaintenanceSecretTrigger() {
   const overlay = document.getElementById('maintenance-overlay');
   if (!overlay) return;
-  bindSecretTap(overlay);
+  bindLongPressTrigger(overlay);
 }
 
 function openModeModal() {
@@ -589,8 +608,8 @@ function closeModeModal() {
 function setupTitleSecretTrigger() {
   const appTitle = document.getElementById('app-title');
   const modeBadge = document.getElementById('mode-badge');
-  bindSecretTap(appTitle);
-  bindSecretTap(modeBadge);
+  bindLongPressTrigger(appTitle);
+  bindLongPressTrigger(modeBadge);
 }
 
 function toHalf(s) {
