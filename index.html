@@ -182,7 +182,7 @@
 <body>
 
 <!-- メンテナンス画面 -->
-<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>
+<!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
 
 <header>
   <h1 id="app-title" style="cursor:pointer;user-select:none;">空き時間共有カレンダー</h1>
@@ -434,6 +434,8 @@ let publicGroupIds = [];
 let adminHash = null;
 let maintenanceTapCount = 0;
 let maintenanceTapTimer = null;
+let adminSecretTapCount = 0;
+let adminSecretTapTimer = null;
 let selectedPrivateUser = '';
 
 async function sha256Hex(text) {
@@ -532,76 +534,63 @@ function updateMaintenanceOverlay() {
   }
 }
 
+function registerAdminSecretTap(source) {
+  if (isAdmin) return;
+  adminSecretTapCount += 1;
+  if (adminSecretTapTimer) clearTimeout(adminSecretTapTimer);
+  adminSecretTapTimer = setTimeout(() => {
+    adminSecretTapCount = 0;
+  }, 5000);
+  if (adminSecretTapCount >= 7) {
+    adminSecretTapCount = 0;
+    openModeModal();
+  }
+}
+
+function bindSecretTap(el) {
+  if (!el) return;
+  const handler = (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    registerAdminSecretTap(el.id || el.className || 'secret');
+  };
+  el.style.pointerEvents = 'auto';
+  el.style.touchAction = 'manipulation';
+  el.addEventListener('click', handler, true);
+  el.addEventListener('touchstart', handler, { passive: false, capture: true });
+  el.addEventListener('pointerdown', handler, true);
+}
+
 function setupMaintenanceSecretTrigger() {
   const overlay = document.getElementById('maintenance-overlay');
   if (!overlay) return;
-
-  const handleMaintenanceTap = (event) => {
-    if (overlay.dataset.enabled !== 'true' || isAdmin) return;
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    maintenanceTapCount += 1;
-
-    if (maintenanceTapTimer) clearTimeout(maintenanceTapTimer);
-    maintenanceTapTimer = setTimeout(() => {
-      maintenanceTapCount = 0;
-    }, 4000);
-
-    if (maintenanceTapCount >= 7) {
-      maintenanceTapCount = 0;
-      openModeModal();
-    }
-  };
-
-  overlay.style.pointerEvents = 'auto';
-  overlay.onclick = handleMaintenanceTap;
-  overlay.ontouchstart = handleMaintenanceTap;
-  overlay.onpointerdown = handleMaintenanceTap;
+  bindSecretTap(overlay);
 }
 
 function openModeModal() {
-  document.getElementById('mode-modal').classList.add('open');
-  document.getElementById('admin-password-input').value = '';
-  document.getElementById('mode-modal-msg').innerHTML = '';
-  document.getElementById('logout-admin-btn').style.display = isAdmin ? 'block' : 'none';
-  setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
+  const modal = document.getElementById('mode-modal');
+  const input = document.getElementById('admin-password-input');
+  const msg = document.getElementById('mode-modal-msg');
+  const logoutBtn = document.getElementById('logout-admin-btn');
+  if (!modal || !input || !msg || !logoutBtn) return;
+  modal.classList.add('open');
+  input.value = '';
+  msg.innerHTML = '';
+  logoutBtn.style.display = isAdmin ? 'block' : 'none';
+  setTimeout(() => input.focus(), 100);
 }
-function closeModeModal() { document.getElementById('mode-modal').classList.remove('open'); }
+function closeModeModal() {
+  const modal = document.getElementById('mode-modal');
+  if (modal) modal.classList.remove('open');
+}
 
 function setupTitleSecretTrigger() {
-  let secretTapCount = 0;
-  let secretTapTimer = null;
   const appTitle = document.getElementById('app-title');
   const modeBadge = document.getElementById('mode-badge');
-
-  const handleTap = (event) => {
-    if (isAdmin) return;
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    secretTapCount += 1;
-    if (secretTapTimer) clearTimeout(secretTapTimer);
-    secretTapTimer = setTimeout(() => {
-      secretTapCount = 0;
-    }, 4000);
-    if (secretTapCount >= 7) {
-      secretTapCount = 0;
-      openModeModal();
-    }
-  };
-
-  [appTitle, modeBadge].forEach(el => {
-    if (!el) return;
-    el.style.cursor = 'pointer';
-    el.style.userSelect = 'none';
-    el.onclick = handleTap;
-    el.ontouchstart = handleTap;
-    el.onpointerdown = handleTap;
-  });
+  bindSecretTap(appTitle);
+  bindSecretTap(modeBadge);
 }
 
 function toHalf(s) {
@@ -1273,6 +1262,10 @@ async function initApp() {
   setupTitleSecretTrigger();
   updateMaintenanceOverlay();
   updatePublicMonthLabel();
+  window.openModeModal = openModeModal;
+  window.closeModeModal = closeModeModal;
+  window.tryAdminLogin = tryAdminLogin;
+  window.logoutAdmin = logoutAdmin;
 }
 
 if (document.readyState === 'loading') {
