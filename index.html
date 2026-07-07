@@ -463,12 +463,15 @@ async function sha256Hex(text) {
 }
 
 async function ensureAdminHash() {
+  const defaultHash = await sha256Hex('1237');
   const snap = await get(ADMIN_HASH_REF);
   if (snap.exists()) {
-    adminHash = snap.val();
-    return;
+    const stored = snap.val();
+    if (typeof stored === 'string' && stored.length === 64) {
+      adminHash = stored;
+      return;
+    }
   }
-  const defaultHash = await sha256Hex('1237');
   adminHash = defaultHash;
   await set(ADMIN_HASH_REF, defaultHash);
 }
