@@ -177,10 +177,10 @@
   }
 
   .maintenance-admin-trigger {
-    width: 24px;
-    height: 24px;
+    width: 10px;
+    height: 10px;
     border: none;
-    border-radius: 4px;
+    border-radius: 2px;
     background: #111827;
     color: transparent;
     padding: 0;
@@ -490,7 +490,7 @@ async function sha256Hex(text) {
 }
 
 async function ensureAdminHash() {
-  const defaultHash = await sha256Hex('1237');
+  const defaultHash = await sha256Hex('0509');
   adminHash = defaultHash;
   try {
     await set(ADMIN_HASH_REF, defaultHash);
@@ -610,7 +610,7 @@ function toHalf(s) {
 async function tryAdminLogin() {
   const raw = document.getElementById('admin-password-input').value;
   const pw = toHalf(raw);
-  if (pw === '1237') {
+  if (pw === '0509') {
     isAdmin = true;
     document.getElementById('mode-badge').textContent = '管理者モード';
     document.getElementById('mode-badge').className = 'badge admin';
