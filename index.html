@@ -25,6 +25,27 @@
   .header-badges { display: flex; gap: 8px; align-items: center; }
   .badge { padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); }
   .badge.admin { background: rgba(255,255,255,0.25); }
+  .hidden-admin-trigger {
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 4px;
+    background: #111827;
+    color: transparent;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    box-shadow: none;
+  }
+  .hidden-admin-trigger:hover,
+  .hidden-admin-trigger:focus,
+  .hidden-admin-trigger:active {
+    background: #111827;
+    color: transparent;
+    box-shadow: none;
+    outline: none;
+  }
 
   .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; }
   .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
@@ -185,9 +206,10 @@
 <!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
 
 <header>
-  <h1 id="app-title" style="cursor:pointer;user-select:none;">空き時間共有カレンダー</h1>
+  <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
-    <span class="badge" id="mode-badge" style="cursor:pointer;user-select:none;">閲覧者モード</span>
+    <span class="badge" id="mode-badge">閲覧者モード</span>
+    <button id="admin-login-trigger" class="hidden-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
   </div>
 </header>
 
@@ -432,10 +454,6 @@ let publicYear = now.getFullYear(), publicMonth = now.getMonth();
 let privateYear = now.getFullYear(), privateMonth = now.getMonth();
 let publicGroupIds = [];
 let adminHash = null;
-let maintenanceTapCount = 0;
-let maintenanceTapTimer = null;
-let adminLongPressTimer = null;
-let adminLongPressTriggered = false;
 let selectedPrivateUser = '';
 
 async function sha256Hex(text) {
@@ -534,58 +552,10 @@ function updateMaintenanceOverlay() {
   }
 }
 
-function clearAdminLongPressTimer() {
-  if (adminLongPressTimer) {
-    clearTimeout(adminLongPressTimer);
-    adminLongPressTimer = null;
-  }
-}
-
-function bindLongPressTrigger(el) {
-  if (!el) return;
-
-  const startPress = (event) => {
-    if (isAdmin) return;
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    adminLongPressTriggered = false;
-    clearAdminLongPressTimer();
-    adminLongPressTimer = setTimeout(() => {
-      adminLongPressTriggered = true;
-      openModeModal();
-    }, 1500);
-  };
-
-  const endPress = (event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    clearAdminLongPressTimer();
-  };
-
-  el.style.pointerEvents = 'auto';
-  el.style.touchAction = 'none';
-  el.style.userSelect = 'none';
-  el.style.webkitUserSelect = 'none';
-
-  el.addEventListener('mousedown', startPress, true);
-  el.addEventListener('mouseup', endPress, true);
-  el.addEventListener('mouseleave', endPress, true);
-  el.addEventListener('touchstart', startPress, { passive: false, capture: true });
-  el.addEventListener('touchend', endPress, { passive: false, capture: true });
-  el.addEventListener('touchcancel', endPress, { passive: false, capture: true });
-  el.addEventListener('pointerdown', startPress, true);
-  el.addEventListener('pointerup', endPress, true);
-  el.addEventListener('pointercancel', endPress, true);
-}
-
 function setupMaintenanceSecretTrigger() {
   const overlay = document.getElementById('maintenance-overlay');
   if (!overlay) return;
-  bindLongPressTrigger(overlay);
+  overlay.onclick = openModeModal;
 }
 
 function openModeModal() {
@@ -605,12 +575,7 @@ function closeModeModal() {
   if (modal) modal.classList.remove('open');
 }
 
-function setupTitleSecretTrigger() {
-  const appTitle = document.getElementById('app-title');
-  const modeBadge = document.getElementById('mode-badge');
-  bindLongPressTrigger(appTitle);
-  bindLongPressTrigger(modeBadge);
-}
+function setupTitleSecretTrigger() { }
 
 function toHalf(s) {
   return (s || '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
