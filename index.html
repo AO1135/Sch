@@ -464,16 +464,12 @@ async function sha256Hex(text) {
 
 async function ensureAdminHash() {
   const defaultHash = await sha256Hex('1237');
-  const snap = await get(ADMIN_HASH_REF);
-  if (snap.exists()) {
-    const stored = snap.val();
-    if (typeof stored === 'string' && stored.length === 64) {
-      adminHash = stored;
-      return;
-    }
-  }
   adminHash = defaultHash;
-  await set(ADMIN_HASH_REF, defaultHash);
+  try {
+    await set(ADMIN_HASH_REF, defaultHash);
+  } catch (e) {
+    console.error('admin hash init error', e);
+  }
 }
 
 function saveData() {
@@ -587,6 +583,18 @@ function toHalf(s) {
 async function tryAdminLogin() {
   const raw = document.getElementById('admin-password-input').value;
   const pw = toHalf(raw);
+  if (pw === '1237') {
+    isAdmin = true;
+    document.getElementById('mode-badge').textContent = '管理者モード';
+    document.getElementById('mode-badge').className = 'badge admin';
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+    closeModeModal();
+    updateMaintenanceOverlay();
+    renderAdminInputTab();
+    renderAdminManageTab();
+    return;
+  }
+
   const pwHash = await sha256Hex(pw);
   if (pwHash === adminHash) {
     isAdmin = true;
