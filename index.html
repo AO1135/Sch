@@ -182,7 +182,7 @@
 <body>
 
 <!-- メンテナンス画面 -->
-<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>
+<!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
 
 <header>
   <h1 id="app-title" style="cursor:pointer;user-select:none;">空き時間共有カレンダー</h1>
@@ -536,21 +536,30 @@ function setupMaintenanceSecretTrigger() {
   const overlay = document.getElementById('maintenance-overlay');
   if (!overlay) return;
 
-  overlay.addEventListener('click', () => {
+  const handleMaintenanceTap = (event) => {
     if (overlay.dataset.enabled !== 'true' || isAdmin) return;
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
 
     maintenanceTapCount += 1;
 
     if (maintenanceTapTimer) clearTimeout(maintenanceTapTimer);
     maintenanceTapTimer = setTimeout(() => {
       maintenanceTapCount = 0;
-    }, 1500);
+    }, 4000);
 
     if (maintenanceTapCount >= 7) {
       maintenanceTapCount = 0;
       openModeModal();
     }
-  });
+  };
+
+  overlay.style.pointerEvents = 'auto';
+  overlay.onclick = handleMaintenanceTap;
+  overlay.ontouchstart = handleMaintenanceTap;
+  overlay.onpointerdown = handleMaintenanceTap;
 }
 
 function openModeModal() {
