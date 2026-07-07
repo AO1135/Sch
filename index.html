@@ -176,6 +176,69 @@
     gap: 12px;
   }
 
+  .update-notice-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99998;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(17, 24, 39, 0.55);
+    padding: 20px;
+  }
+
+  .update-notice-overlay.open {
+    display: flex;
+  }
+
+  .update-notice-modal {
+    position: relative;
+    width: min(680px, 100%);
+    max-height: 85vh;
+    overflow-y: auto;
+    background: white;
+    color: #111827;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+    padding: 28px 22px 22px;
+  }
+
+  .update-notice-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #111827;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .update-notice-close:hover {
+    background: #e5e7eb;
+  }
+
+  .update-notice-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 14px;
+    padding-right: 56px;
+  }
+
+  .update-notice-body {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: 0.98rem;
+  }
+
   .maintenance-admin-trigger {
     width: 10px;
     height: 10px;
@@ -230,6 +293,17 @@
 <div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">
   <span>メンテナンス中</span>
   <button id="maintenance-admin-login-trigger" class="maintenance-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
+</div>
+
+<!-- アップデート表示 -->
+<!-- 表示したいときは true / 消したいときは false にする -->
+<!-- タイトルや本文は下の JavaScript 定数を書き換える -->
+<div id="update-notice-overlay" class="update-notice-overlay">
+  <div class="update-notice-modal">
+    <button class="update-notice-close" type="button" aria-label="閉じる" onclick="closeUpdateNotice()">×</button>
+    <div class="update-notice-title" id="update-notice-title"></div>
+    <div class="update-notice-body" id="update-notice-body"></div>
+  </div>
 </div>
 
 <header>
@@ -466,6 +540,18 @@ const database = getDatabase(firebaseApp);
 const DB_REF = ref(database, 'scheduleApp');
 const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
 
+/* ===== アップデート表示設定ここから ===== */
+const SHOW_UPDATE_NOTICE = true;
+const UPDATE_NOTICE_TITLE = 'アップデート情報';
+const UPDATE_NOTICE_BODY = `変更内容
+・個人予定閲覧タブを追加
+・各ユーザーが閲覧許可した相手だけその人の予定を見られるように実装
+・公開カレンダーの灰色（一部空き）を削除
+・凡例の青・黄の説明を修正
+・青：全員午前空き
+・黄：全員午後空き`;
+/* ===== アップデート表示設定ここまで ===== */
+
 function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {} }; }
 
 let db = getDefaultData();
@@ -567,6 +653,24 @@ function showTab(name, btn) {
   if (name === 'manage' && isAdmin) renderAdminManageTab();
 }
 window.showTab = showTab;
+window.closeUpdateNotice = closeUpdateNotice;
+
+function openUpdateNotice() {
+  if (!SHOW_UPDATE_NOTICE) return;
+  const overlay = document.getElementById('update-notice-overlay');
+  const title = document.getElementById('update-notice-title');
+  const body = document.getElementById('update-notice-body');
+  if (!overlay || !title || !body) return;
+  title.textContent = UPDATE_NOTICE_TITLE;
+  body.textContent = UPDATE_NOTICE_BODY;
+  overlay.classList.add('open');
+}
+
+function closeUpdateNotice() {
+  const overlay = document.getElementById('update-notice-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+}
 
 function updateMaintenanceOverlay() {
   const overlay = document.getElementById('maintenance-overlay');
@@ -1292,6 +1396,7 @@ async function initApp() {
   setupTitleSecretTrigger();
   updateMaintenanceOverlay();
   updatePublicMonthLabel();
+  openUpdateNotice();
   window.openModeModal = openModeModal;
   window.closeModeModal = closeModeModal;
   window.tryAdminLogin = tryAdminLogin;
