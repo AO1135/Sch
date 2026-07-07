@@ -580,8 +580,16 @@ function updateMaintenanceOverlay() {
 
 function setupMaintenanceSecretTrigger() {
   const overlay = document.getElementById('maintenance-overlay');
-  if (!overlay) return;
-  overlay.onclick = openModeModal;
+  const trigger = document.getElementById('maintenance-admin-login-trigger');
+  if (!overlay || !trigger) return;
+  overlay.onclick = null;
+  overlay.onpointerdown = null;
+  overlay.ontouchstart = null;
+  trigger.onclick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openModeModal();
+  };
 }
 
 function openModeModal() {
