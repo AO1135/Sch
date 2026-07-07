@@ -173,6 +173,30 @@
 
   .maintenance-overlay.active {
     display: flex;
+    gap: 12px;
+  }
+
+  .maintenance-admin-trigger {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: #111827;
+    color: transparent;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .maintenance-admin-trigger:hover,
+  .maintenance-admin-trigger:focus,
+  .maintenance-admin-trigger:active {
+    background: #111827;
+    color: transparent;
+    box-shadow: none;
+    outline: none;
   }
 
   .permission-grid {
@@ -203,7 +227,10 @@
 <body>
 
 <!-- メンテナンス画面 -->
-<!--<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">メンテナンス中</div>-->
+<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">
+  <span>メンテナンス中</span>
+  <button id="maintenance-admin-login-trigger" class="maintenance-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
+</div>
 
 <header>
   <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
