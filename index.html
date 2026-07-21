@@ -321,13 +321,15 @@
 </div>
 --> 
 
+<!--
 <div id="update-notice-overlay" class="update-notice-overlay">
   <div class="update-notice-modal">
-    <!-- <button class="update-notice-close" type="button" aria-label="閉じる" onclick="closeUpdateNotice()">×</button> -->
+    <button class="update-notice-close" type="button" aria-label="閉じる" onclick="closeUpdateNotice()">×</button>
     <div class="update-notice-title" id="update-notice-title"></div>
     <div class="update-notice-body" id="update-notice-body"></div>
   </div>
 </div>
+-->
 
 <header>
   <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
@@ -599,12 +601,14 @@ const database = getDatabase(firebaseApp);
 const DB_REF = ref(database, 'scheduleApp');
 const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
 
+/*
 const SHOW_UPDATE_NOTICE = true;
 const UPDATE_NOTICE_TITLE = 'アップデート情報';
 const UPDATE_NOTICE_BODY = `変更内容
 ・公開カレンダーに空き割合と人数表示を追加
 ・公開カレンダーにグループメンバー向けの予約メモ機能を追加
 ・予約が入っている日は紫で見分けられるように調整`;
+*/
 const CHANGE_HISTORY = [
   {
     date: '2026-07-21',
@@ -741,8 +745,8 @@ function showTab(name, btn) {
   if (name === 'manage' && isAdmin) renderAdminManageTab();
 }
 window.showTab = showTab;
-window.closeUpdateNotice = closeUpdateNotice;
 
+/*
 function openUpdateNotice() {
   if (!SHOW_UPDATE_NOTICE) return;
   const overlay = document.getElementById('update-notice-overlay');
@@ -759,6 +763,7 @@ function closeUpdateNotice() {
   if (!overlay) return;
   overlay.classList.remove('open');
 }
+*/
 
 function updateMaintenanceOverlay() {
   const overlay = document.getElementById('maintenance-overlay');
@@ -1652,7 +1657,7 @@ async function initApp() {
   setupTitleSecretTrigger();
   updateMaintenanceOverlay();
   updatePublicMonthLabel();
-  openUpdateNotice();
+  // openUpdateNotice();
   window.openModeModal = openModeModal;
   window.closeModeModal = closeModeModal;
   window.tryAdminLogin = tryAdminLogin;
