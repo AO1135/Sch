@@ -314,14 +314,16 @@
 </head>
 <body>
 
+<!--
 <div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">
   <span>メンテナンス中</span>
   <button id="maintenance-admin-login-trigger" class="maintenance-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
 </div>
+--> 
 
 <div id="update-notice-overlay" class="update-notice-overlay">
   <div class="update-notice-modal">
-    <button class="update-notice-close" type="button" aria-label="閉じる" onclick="closeUpdateNotice()">×</button>
+    <!-- <button class="update-notice-close" type="button" aria-label="閉じる" onclick="closeUpdateNotice()">×</button> -->
     <div class="update-notice-title" id="update-notice-title"></div>
     <div class="update-notice-body" id="update-notice-body"></div>
   </div>
@@ -339,7 +341,7 @@
   <button class="tab-btn active" onclick="showTab('input', this)">予定入力</button>
   <button class="tab-btn" onclick="showTab('public', this)">公開カレンダー</button>
   <button class="tab-btn" onclick="showTab('private', this)">個人予定閲覧</button>
-  <!-- <button class="tab-btn" onclick="showTab('history', this)">変更履歴</button> -->
+  <button class="tab-btn" onclick="showTab('history', this)">変更履歴</button>
   <button class="tab-btn admin-only" onclick="showTab('admin', this)" style="display:none;">管理追加</button>
   <button class="tab-btn admin-only" onclick="showTab('manage', this)" style="display:none;">管理一覧</button>
 </div>
