@@ -13,6 +13,9 @@
     --border: #e5e7eb;
     --text: #111827;
     --muted: #6b7280;
+    --booked: #f5d0fe;
+    --booked-border: #c026d3;
+    --booked-text: #701a75;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -62,11 +65,12 @@
   .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
   .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
   label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
-  input[type="text"], input[type="password"], input[type="time"], input[type="date"], select {
+  input[type="text"], input[type="password"], input[type="time"], input[type="date"], select, textarea {
     padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
     font-size: 0.9rem; color: var(--text); background: white; transition: border-color 0.2s;
   }
-  input:focus, select:focus { outline: none; border-color: var(--primary); }
+  textarea { min-height: 92px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
 
   .btn { padding: 8px 16px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
   .btn-primary { background: #111827; color: white; border-color: #111827; }
@@ -87,9 +91,9 @@
 
   .cal-day {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 48px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;
+    min-height: 58px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500;
     transition: all 0.12s; position: relative; user-select: none;
-    border: 2px solid transparent; padding: 2px; gap: 1px;
+    border: 2px solid transparent; padding: 4px; gap: 4px;
   }
   .cal-day.empty { cursor: default; background: none !important; border-color: transparent !important; }
   .cal-day.sun .day-num { color: #ef4444; }
@@ -104,6 +108,8 @@
   .cal-day.day-pm .day-num { color: #713f12; }
   .cal-day.day-busy { background: #fecaca; border-color: #dc2626; }
   .cal-day.day-busy .day-num { color: #7f1d1d; }
+  .cal-day.day-booked { background: var(--booked); border-color: var(--booked-border); }
+  .cal-day.day-booked .day-num { color: var(--booked-text); }
   .cal-day:not(.empty):not(.day-free):not(.day-busy):not(.day-time):hover { background: #f3f4f6; }
 
   .cal-day.common-all  { background: #bbf7d0; border-color: #16a34a; }
@@ -115,7 +121,16 @@
   .day-time-label {
     font-size: 0.6rem; font-weight: 600; line-height: 1.1; color: #713f12;
     text-align: center; white-space: nowrap; overflow: hidden; max-width: 100%;
-    padding: 1px 2px; background: rgba(255,255,255,0.6); border-radius: 3px;
+    padding: 1px 4px; background: rgba(255,255,255,0.75); border-radius: 999px;
+  }
+  .day-ratio-label {
+    font-size: 0.58rem; line-height: 1.1; font-weight: 700;
+    background: rgba(255,255,255,0.85); color: #111827; border-radius: 999px; padding: 2px 5px;
+  }
+  .day-booking-label {
+    font-size: 0.56rem; line-height: 1.1; font-weight: 700;
+    color: var(--booked-text); background: rgba(255,255,255,0.82); border-radius: 999px; padding: 2px 5px;
+    max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
   .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -136,6 +151,11 @@
   .group-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: 8px; border: 1.5px solid var(--border); margin-bottom: 6px; }
 
   .output-day { display: inline-flex; flex-direction: column; gap: 2px; padding: 8px 12px; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; font-weight: 500; font-size: 0.875rem; color: #14532d; margin: 3px; }
+  .booking-card { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .booking-card-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; }
+  .booking-badge { display:inline-flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:700; color: var(--booked-text); background:#f3e8ff; border:1px solid #d8b4fe; border-radius:999px; padding:4px 8px; }
+  .ratio-summary { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px; }
+  .ratio-chip { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; background:#f9fafb; border:1px solid var(--border); border-radius:999px; font-size:0.82rem; }
 
   .mode-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
 
@@ -282,20 +302,18 @@
 
   @media(max-width:600px) {
     .form-row { flex-direction: column; }
-    .cal-day { font-size: 0.72rem; min-height: 40px; }
-    .day-time-label { font-size: 0.55rem; }
+    .cal-day { font-size: 0.72rem; min-height: 50px; }
+    .day-time-label, .day-ratio-label, .day-booking-label { font-size: 0.52rem; }
   }
 </style>
 </head>
 <body>
 
-<!-- メンテナンス画面 -->
 <div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">
   <span>メンテナンス中</span>
   <button id="maintenance-admin-login-trigger" class="maintenance-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
 </div>
 
-<!-- アップデート表示 -->
 <div id="update-notice-overlay" class="update-notice-overlay">
   <div class="update-notice-modal">
     <button class="update-notice-close" type="button" aria-label="閉じる" onclick="closeUpdateNotice()">×</button>
@@ -414,23 +432,50 @@
   <div id="public-calendar-area" style="display:none;">
     <div class="public-header">
       <h2 id="public-group-title"></h2>
-      <p>共通の空き日時</p>
+      <p>共通の空き日時と予約</p>
     </div>
     <div class="card">
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#bbf7d0;border:2px solid #16a34a;"></div> 全員一日空き（緑）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#bfdbfe;border:2px solid #2563eb;"></div> 全員午前空き（青）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#fef08a;border:2px solid #ca8a04;"></div> 全員午後空き（黄）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f5d0fe;border:2px solid #c026d3;"></div> 予約あり（紫）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#fecaca;border:2px solid #dc2626;"></div> 空きなし（赤）</div>
       </div>
+      <div id="public-ratio-summary" class="ratio-summary"></div>
       <div style="text-align:center;padding:6px 0 12px;font-size:0.95rem;font-weight:600;" id="public-cal-title"></div>
       <div class="cal-wrap">
         <div class="calendar" id="public-calendar"></div>
       </div>
     </div>
+    <div class="card" id="public-booking-panel">
+      <h2>予定を立てる</h2>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">選択中のグループのメンバーだけ、日付を指定して仮予約メモを残せます。</p>
+      <div id="public-booking-access-msg"></div>
+      <div id="public-booking-form-wrap" style="display:none;">
+        <div class="form-row">
+          <div class="form-group" style="max-width:220px;">
+            <label>日付</label>
+            <input type="date" id="booking-date-input">
+          </div>
+          <div class="form-group">
+            <label>内容メモ</label>
+            <textarea id="booking-note-input" placeholder="例：面談候補、ランチ、打ち合わせ希望 など"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="savePublicBooking()">予約を追加</button>
+          <button class="btn btn-secondary" onclick="clearPublicBookingForm()">入力をクリア</button>
+        </div>
+      </div>
+    </div>
     <div class="card">
       <h2>空き日時一覧</h2>
       <div id="public-output-list"></div>
+    </div>
+    <div class="card">
+      <h2>予約一覧</h2>
+      <div id="public-booking-list"></div>
     </div>
   </div>
 </div>
@@ -520,7 +565,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDqHcFOvjgNf08hJneUSJUU2deoqWSJVHw",
@@ -538,19 +583,14 @@ const database = getDatabase(firebaseApp);
 const DB_REF = ref(database, 'scheduleApp');
 const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
 
-/* ===== アップデート表示設定ここから ===== */
 const SHOW_UPDATE_NOTICE = true;
 const UPDATE_NOTICE_TITLE = 'アップデート情報';
 const UPDATE_NOTICE_BODY = `変更内容
-・個人予定閲覧タブを追加
-・各ユーザーが閲覧許可した相手だけその人の予定を見られるように実装
-・公開カレンダーの灰色（一部空き）を削除
-・凡例の青・黄の説明を修正
-・青：全員午前空き
-・黄：全員午後空き`;
-/* ===== アップデート表示設定ここまで ===== */
+・公開カレンダーに空き割合と人数表示を追加
+・公開カレンダーにグループメンバー向けの予約メモ機能を追加
+・予約が入っている日は紫で見分けられるように調整`;
 
-function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {} }; }
+function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {}, bookings: {} }; }
 
 let db = getDefaultData();
 let _isSaving = false;
@@ -596,7 +636,8 @@ function normalizeDB(raw) {
     users: raw.users && typeof raw.users === 'object' ? raw.users : {},
     groups: raw.groups && typeof raw.groups === 'object' ? raw.groups : {},
     schedules: raw.schedules && typeof raw.schedules === 'object' ? raw.schedules : {},
-    permissions: raw.permissions && typeof raw.permissions === 'object' ? raw.permissions : {}
+    permissions: raw.permissions && typeof raw.permissions === 'object' ? raw.permissions : {},
+    bookings: raw.bookings && typeof raw.bookings === 'object' ? raw.bookings : {}
   };
   Object.keys(normalized.schedules).forEach(username => {
     const sched = normalized.schedules[username] || {};
@@ -605,6 +646,9 @@ function normalizeDB(raw) {
   });
   Object.keys(normalized.users).forEach(username => {
     if (!Array.isArray(normalized.permissions[username])) normalized.permissions[username] = [];
+  });
+  Object.keys(normalized.bookings).forEach(groupId => {
+    if (!Array.isArray(normalized.bookings[groupId])) normalized.bookings[groupId] = [];
   });
   return normalized;
 }
@@ -832,6 +876,30 @@ function getCommonAvailabilityType(users, dateStr) {
   if (types.every(t => t === 'pm' || t === 'full')) return 'pm';
   return '';
 }
+function getAvailabilityRatio(users, dateStr) {
+  if (!users.length) return { count: 0, total: 0, percent: 0 };
+  const count = getAvailableUsersOnDate(users, dateStr).length;
+  const total = users.length;
+  const percent = Math.round((count / total) * 100);
+  return { count, total, percent };
+}
+function getGroupBookings(groupId) {
+  return Array.isArray(db.bookings[groupId]) ? db.bookings[groupId] : [];
+}
+function getBookingsForMonth(groupIds, year, month) {
+  const prefix = `${year}-${pad(month+1)}-`;
+  return groupIds.flatMap(groupId => getGroupBookings(groupId).map(item => ({ ...item, groupId }))).filter(item => (item.date || '').startsWith(prefix)).sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.createdAt || '').localeCompare(b.createdAt || '');
+  });
+}
+function getBookingsForDate(groupIds, dateStr) {
+  return getBookingsForMonth(groupIds, Number(dateStr.slice(0,4)), Number(dateStr.slice(5,7)) - 1).filter(item => item.date === dateStr);
+}
+function isCurrentUserInSelectedGroupMembers() {
+  if (!currentUser || !publicGroupIds.length) return false;
+  return publicGroupIds.some(id => (db.groups[id]?.members || []).includes(currentUser));
+}
 function setInputType(type) { currentInputType = type; }
 
 function renderInputCalendar() {
@@ -1009,6 +1077,7 @@ function renderPublicCalendar() {
 
   const groups = publicGroupIds.map(id => db.groups[id]).filter(Boolean);
   const members = [...new Set(groups.flatMap(g => g.members || []))];
+  const bookingsInMonth = getBookingsForMonth(publicGroupIds, publicYear, publicMonth);
 
   document.getElementById('public-group-title').textContent = `📁 ${groups.map(g => g.name).join(' / ')}`;
   area.style.display = 'block';
@@ -1018,10 +1087,13 @@ function renderPublicCalendar() {
   const firstDay = new Date(publicYear, publicMonth, 1).getDay();
   const answeredUsers = getAnsweredUsersInMonth(members, publicYear, publicMonth);
 
+  renderPublicBookingForm(groups);
+
   if (answeredUsers.length <= 1) {
     document.getElementById('public-calendar').innerHTML = '';
-    document.getElementById('public-output-list').innerHTML =
-      '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
+    document.getElementById('public-output-list').innerHTML = '<p style="color:var(--muted);font-size:0.9rem;padding:12px 0;">👥 公開カレンダーは2人以上の回答が必要です。</p>';
+    document.getElementById('public-ratio-summary').innerHTML = '';
+    renderPublicBookingList(bookingsInMonth, groups);
     return;
   }
 
@@ -1031,36 +1103,153 @@ function renderPublicCalendar() {
 
   let listHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
   let found = false;
+  let bestDays = [];
 
   for (let d = 1; d <= dim; d++) {
     const ds = `${publicYear}-${pad(publicMonth+1)}-${pad(d)}`;
     const dow = new Date(publicYear, publicMonth, d).getDay();
     const commonType = getCommonAvailabilityType(answeredUsers, ds);
+    const ratio = getAvailabilityRatio(answeredUsers, ds);
+    const dayBookings = bookingsInMonth.filter(item => item.date === ds);
 
     let cls = 'cal-day';
     if (dow === 0) cls += ' sun';
     if (dow === 6) cls += ' sat';
     if (ds === todayStr) cls += ' today';
 
-    if (commonType === 'full') cls += ' common-all';
+    if (dayBookings.length) cls += ' day-booked';
+    else if (commonType === 'full') cls += ' common-all';
     else if (commonType === 'am') cls += ' day-am';
     else if (commonType === 'pm') cls += ' day-pm';
     else cls += ' common-none';
 
-    html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
+    const bookingLabel = dayBookings.length ? `<span class="day-booking-label">予約${dayBookings.length}件</span>` : '';
+    const ratioLabel = `<span class="day-ratio-label">${ratio.percent}% / ${ratio.count}人</span>`;
+    html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span>${ratioLabel}${bookingLabel}</div>`;
 
     if (commonType) {
       found = true;
       const dowStr = ['日','月','火','水','木','金','土'][dow];
       const label = commonType === 'full' ? '一日' : (commonType === 'am' ? '午前' : '午後');
-      listHtml += `<div class="output-day">📅 ${ds}（${dowStr}） ${label}</div>`;
+      listHtml += `<div class="output-day">📅 ${ds}（${dowStr}） ${label} ・ ${ratio.percent}% / ${ratio.count}人</div>`;
+      bestDays.push({ ds, ratio: ratio.percent, count: ratio.count, label });
     }
   }
   listHtml += '</div>';
   if (!found) listHtml = '<p style="color:var(--muted);">この月に共通の空き日はありません。</p>';
 
+  bestDays.sort((a,b) => b.ratio - a.ratio || b.count - a.count || a.ds.localeCompare(b.ds));
+  const top = bestDays.slice(0, 5);
+  document.getElementById('public-ratio-summary').innerHTML = top.length
+    ? top.map(item => `<div class="ratio-chip">候補 ${item.ds} ${item.label} ・ ${item.ratio}% / ${item.count}人</div>`).join('')
+    : '<div class="ratio-chip">空き割合は各日セルに表示されます。</div>';
+
   document.getElementById('public-calendar').innerHTML = html;
   document.getElementById('public-output-list').innerHTML = listHtml;
+  renderPublicBookingList(bookingsInMonth, groups);
+}
+
+function renderPublicBookingForm(groups) {
+  const msgEl = document.getElementById('public-booking-access-msg');
+  const formWrap = document.getElementById('public-booking-form-wrap');
+  const dateInput = document.getElementById('booking-date-input');
+  if (!msgEl || !formWrap || !dateInput) return;
+  if (!currentUser) {
+    msgEl.innerHTML = '<div class="alert alert-error">予約するにはログインしてください。</div>';
+    formWrap.style.display = 'none';
+    return;
+  }
+  if (!isCurrentUserInSelectedGroupMembers()) {
+    msgEl.innerHTML = '<div class="alert alert-error">このグループのメンバーだけ予約できます。</div>';
+    formWrap.style.display = 'none';
+    return;
+  }
+  msgEl.innerHTML = '<div class="alert alert-info">予約は日付とメモだけを登録します。あとから削除できます。</div>';
+  formWrap.style.display = 'block';
+  dateInput.value = dateInput.value || `${publicYear}-${pad(publicMonth+1)}-01`;
+}
+
+function clearPublicBookingForm() {
+  const dateInput = document.getElementById('booking-date-input');
+  const noteInput = document.getElementById('booking-note-input');
+  if (dateInput) dateInput.value = '';
+  if (noteInput) noteInput.value = '';
+}
+
+function savePublicBooking() {
+  if (!currentUser || !publicGroupIds.length) return;
+  if (!isCurrentUserInSelectedGroupMembers()) {
+    showAlert('このグループのメンバーだけ予約できます。', 'error');
+    return;
+  }
+  const date = document.getElementById('booking-date-input').value;
+  const note = document.getElementById('booking-note-input').value.trim();
+  if (!date) {
+    showAlert('日付を選んでください。', 'error');
+    return;
+  }
+  if (!note) {
+    showAlert('内容メモを入力してください。', 'error');
+    return;
+  }
+  const selectedGroupId = publicGroupIds[0];
+  if (!Array.isArray(db.bookings[selectedGroupId])) db.bookings[selectedGroupId] = [];
+  db.bookings[selectedGroupId].push({
+    id: `b_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    date,
+    note,
+    createdBy: currentUser,
+    createdAt: new Date().toISOString()
+  });
+  saveData();
+  clearPublicBookingForm();
+  renderPublicCalendar();
+  showAlert('予約を追加しました。', 'success');
+}
+
+function deletePublicBooking(groupId, bookingId) {
+  const items = getGroupBookings(groupId);
+  const item = items.find(x => x.id === bookingId);
+  if (!item) return;
+  const isOwner = item.createdBy === currentUser;
+  if (!isOwner && !isAdmin) {
+    showAlert('自分の予約だけ削除できます。', 'error');
+    return;
+  }
+  if (!confirm('この予約を削除しますか？')) return;
+  db.bookings[groupId] = items.filter(x => x.id !== bookingId);
+  saveData();
+  renderPublicCalendar();
+  showAlert('予約を削除しました。', 'success');
+}
+
+function renderPublicBookingList(bookings, groups) {
+  const el = document.getElementById('public-booking-list');
+  if (!el) return;
+  if (!bookings.length) {
+    el.innerHTML = '<p style="color:var(--muted);">この月の予約はまだありません。</p>';
+    return;
+  }
+  const groupMap = Object.fromEntries(groups.map(g => [Object.entries(db.groups).find(([, v]) => v === g)?.[0], g.name]).filter(Boolean));
+  el.innerHTML = bookings.map(item => {
+    const canDelete = currentUser === item.createdBy || isAdmin;
+    const groupName = groupMap[item.groupId] || db.groups[item.groupId]?.name || '';
+    return `
+      <div class="booking-card">
+        <div class="booking-card-head">
+          <div>
+            <div class="booking-badge">📌 ${item.date}</div>
+            <div style="margin-top:8px;font-size:0.92rem;font-weight:600;">${item.note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+          </div>
+          <div style="text-align:right;font-size:0.8rem;color:var(--muted);">
+            <div>${groupName}</div>
+            <div>登録: ${item.createdBy}</div>
+          </div>
+        </div>
+        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deletePublicBooking('${item.groupId}','${item.id}')">削除</button>` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
 function changePublicMonth(delta) {
@@ -1081,6 +1270,9 @@ window.renderPublicGroupOptions = renderPublicGroupOptions;
 window.renderPublicCalendar = renderPublicCalendar;
 window.changePublicMonth = changePublicMonth;
 window.updatePublicMonthLabel = updatePublicMonthLabel;
+window.savePublicBooking = savePublicBooking;
+window.clearPublicBookingForm = clearPublicBookingForm;
+window.deletePublicBooking = deletePublicBooking;
 
 function getViewableUsers() {
   if (!currentUser) return [];
@@ -1191,6 +1383,9 @@ function deleteUser(name) {
     db.permissions[owner] = (db.permissions[owner] || []).filter(u => u !== name);
   });
   Object.values(db.groups).forEach(g => { g.members = (g.members||[]).filter(m => m !== name); });
+  Object.keys(db.bookings).forEach(groupId => {
+    db.bookings[groupId] = (db.bookings[groupId] || []).filter(item => item.createdBy !== name);
+  });
   saveData();
   renderAdminManageTab();
 }
@@ -1222,6 +1417,10 @@ function changeUserName(username) {
   Object.values(db.groups).forEach(g => {
     if (!Array.isArray(g.members)) return;
     g.members = g.members.map(m => m === username ? trimmed : m);
+  });
+
+  Object.keys(db.bookings).forEach(groupId => {
+    db.bookings[groupId] = (db.bookings[groupId] || []).map(item => item.createdBy === username ? { ...item, createdBy: trimmed } : item);
   });
 
   if (currentUser === username) {
@@ -1284,6 +1483,7 @@ function deleteGroup(id) {
   if (!db.groups[id]) return;
   if (!confirm(`グループ "${db.groups[id].name}" を削除しますか？`)) return;
   delete db.groups[id];
+  delete db.bookings[id];
   saveData();
   renderAdminManageTab();
 }
