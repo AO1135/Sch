@@ -299,6 +299,11 @@
     cursor: pointer;
   }
   .permission-chip input { accent-color: #111827; }
+  .history-list { display:flex; flex-direction:column; gap:12px; }
+  .history-item { border:1px solid var(--border); border-radius:10px; padding:14px; background:white; }
+  .history-date { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; background:#f3f4f6; border:1px solid #e5e7eb; font-size:0.76rem; font-weight:700; color:#374151; margin-bottom:8px; }
+  .history-item ul { margin:8px 0 0 18px; color:#374151; }
+  .history-item li { margin:4px 0; }
 
   @media(max-width:600px) {
     .form-row { flex-direction: column; }
@@ -309,10 +314,10 @@
 </head>
 <body>
 
-<!-- <div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">
+<div id="maintenance-overlay" class="maintenance-overlay active" data-enabled="true">
   <span>メンテナンス中</span>
   <button id="maintenance-admin-login-trigger" class="maintenance-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
-</div> -->
+</div>
 
 <div id="update-notice-overlay" class="update-notice-overlay">
   <div class="update-notice-modal">
@@ -334,6 +339,7 @@
   <button class="tab-btn active" onclick="showTab('input', this)">予定入力</button>
   <button class="tab-btn" onclick="showTab('public', this)">公開カレンダー</button>
   <button class="tab-btn" onclick="showTab('private', this)">個人予定閲覧</button>
+  <!-- <button class="tab-btn" onclick="showTab('history', this)">変更履歴</button> -->
   <button class="tab-btn admin-only" onclick="showTab('admin', this)" style="display:none;">管理追加</button>
   <button class="tab-btn admin-only" onclick="showTab('manage', this)" style="display:none;">管理一覧</button>
 </div>
@@ -512,6 +518,14 @@
   </div>
 </div>
 
+<div id="tab-history" class="section">
+  <div class="card">
+    <h2>変更履歴</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">これまでの主な変更内容を確認できます。</p>
+    <div id="history-list" class="history-list"></div>
+  </div>
+</div>
+
 <div id="tab-admin" class="section">
   <div class="mode-panel"><h3>管理者モード</h3><p style="font-size:0.85rem;color:var(--muted);">このタブでは追加のみ行えます。</p></div>
   <div class="card">
@@ -589,6 +603,35 @@ const UPDATE_NOTICE_BODY = `変更内容
 ・公開カレンダーに空き割合と人数表示を追加
 ・公開カレンダーにグループメンバー向けの予約メモ機能を追加
 ・予約が入っている日は紫で見分けられるように調整`;
+const CHANGE_HISTORY = [
+  {
+    date: '2026-07-21',
+    title: '公開カレンダー強化',
+    items: [
+      '公開カレンダーに空き割合と人数（例: 75% / 3人）を表示',
+      '空き率の高い候補日を上部に表示',
+      'グループメンバーだけが使える予約メモ機能を追加',
+      '予約が入っている日を紫で表示',
+      '予約一覧と削除機能を追加'
+    ]
+  },
+  {
+    date: '2026-07-21',
+    title: '個人予定閲覧の追加',
+    items: [
+      '個人予定閲覧タブを追加',
+      '閲覧許可した相手だけ予定を見られるように変更'
+    ]
+  },
+  {
+    date: '2026-07-21',
+    title: '公開カレンダー表示の調整',
+    items: [
+      '灰色の一部空き表示を削除',
+      '凡例の青と黄の説明を修正'
+    ]
+  }
+];
 
 function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {}, bookings: {} }; }
 
@@ -691,6 +734,7 @@ function showTab(name, btn) {
   }
   if (name === 'public') { updatePublicMonthLabel(); renderPublicGroupOptions(); renderPublicCalendar(); }
   if (name === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
+  if (name === 'history') { renderHistoryTab(); }
   if (name === 'admin' && isAdmin) renderAdminInputTab();
   if (name === 'manage' && isAdmin) renderAdminManageTab();
 }
@@ -1350,6 +1394,18 @@ function changePrivateMonth(delta) {
 }
 window.selectPrivateUser = selectPrivateUser;
 window.changePrivateMonth = changePrivateMonth;
+
+function renderHistoryTab() {
+  const el = document.getElementById('history-list');
+  if (!el) return;
+  el.innerHTML = CHANGE_HISTORY.map(item => `
+    <div class="history-item">
+      <div class="history-date">${item.date}</div>
+      <div style="font-weight:700; margin-bottom:6px;">${item.title}</div>
+      <ul>${item.items.map(text => `<li>${text}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+}
 
 function renderAdminInputTab() { }
 
