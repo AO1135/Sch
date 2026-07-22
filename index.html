@@ -688,7 +688,7 @@ function applyUserSession(username) {
   if (username === 'あおい') {
     enableAdminMode();
   } else {
-    disableAdminMode();
+    disableAdminMode({ silent: true });
   }
   document.getElementById('login-card').style.display = 'none';
   document.getElementById('input-area').style.display = 'block';
@@ -812,12 +812,12 @@ function enableAdminMode() {
   renderDeviceManagementTab();
 }
 
-function disableAdminMode() {
+function disableAdminMode(options = {}) {
   isAdmin = false;
   document.getElementById('mode-badge').textContent = '閲覧者モード';
   document.getElementById('mode-badge').className = 'badge';
   document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-  showTab('input');
+  if (!options.silent) showTab('input');
 }
 
 function logoutAdmin() {
