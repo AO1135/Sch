@@ -226,7 +226,6 @@
   <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
     <span class="badge" id="mode-badge">閲覧者モード</span>
-    <button id="admin-login-trigger" class="hidden-admin-trigger" type="button" aria-label="管理者ログイン" onclick="openModeModal()"></button>
   </div>
 </header>
 
@@ -469,21 +468,6 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="mode-modal">
-  <div class="modal">
-    <h2>🔐 管理者ログイン</h2>
-    <div class="form-group" style="margin-bottom:12px;">
-      <label>管理者パスワード</label>
-      <input type="password" id="admin-password-input" placeholder="パスワードを入力" autocomplete="new-password" onkeydown="if(event.key==='Enter')tryAdminLogin()">
-    </div>
-    <div id="mode-modal-msg"></div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModeModal()">キャンセル</button>
-      <button class="btn btn-primary" onclick="tryAdminLogin()">ログイン</button>
-      <button class="btn btn-warning" id="logout-admin-btn" style="display:none;" onclick="logoutAdmin()">管理者ログアウト</button>
-    </div>
-  </div>
-</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -701,6 +685,11 @@ async function clearCurrentDeviceFromFirebase() {
 
 function applyUserSession(username) {
   currentUser = username;
+  if (username === 'あおい') {
+    enableAdminMode();
+  } else {
+    disableAdminMode();
+  }
   document.getElementById('login-card').style.display = 'none';
   document.getElementById('input-area').style.display = 'block';
   document.getElementById('current-username').textContent = username;
@@ -813,68 +802,27 @@ function showTab(name, btn) {
 }
 window.showTab = showTab;
 
-function openModeModal() {
-  const modal = document.getElementById('mode-modal');
-  const input = document.getElementById('admin-password-input');
-  const msg = document.getElementById('mode-modal-msg');
-  const logoutBtn = document.getElementById('logout-admin-btn');
-  if (!modal || !input || !msg || !logoutBtn) return;
-  modal.classList.add('open');
-  input.value = '';
-  msg.innerHTML = '';
-  logoutBtn.style.display = isAdmin ? 'block' : 'none';
-  setTimeout(() => input.focus(), 100);
-}
-function closeModeModal() {
-  const modal = document.getElementById('mode-modal');
-  if (modal) modal.classList.remove('open');
+function enableAdminMode() {
+  isAdmin = true;
+  document.getElementById('mode-badge').textContent = '管理者モード';
+  document.getElementById('mode-badge').className = 'badge admin';
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+  renderAdminInputTab();
+  renderAdminManageTab();
+  renderDeviceManagementTab();
 }
 
-function toHalf(s) {
-  return (s || '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
-}
-
-async function tryAdminLogin() {
-  const raw = document.getElementById('admin-password-input').value;
-  const pw = toHalf(raw);
-  if (pw === '0509') {
-    isAdmin = true;
-    document.getElementById('mode-badge').textContent = '管理者モード';
-    document.getElementById('mode-badge').className = 'badge admin';
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
-    closeModeModal();
-    renderAdminInputTab();
-    renderAdminManageTab();
-    renderDeviceManagementTab();
-    return;
-  }
-
-  const pwHash = await sha256Hex(pw);
-  if (pwHash === adminHash) {
-    isAdmin = true;
-    document.getElementById('mode-badge').textContent = '管理者モード';
-    document.getElementById('mode-badge').className = 'badge admin';
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
-    closeModeModal();
-    renderAdminInputTab();
-    renderAdminManageTab();
-    renderDeviceManagementTab();
-  } else {
-    document.getElementById('mode-modal-msg').innerHTML = '<div class="alert alert-error">パスワードが違います。</div>';
-  }
-}
-
-function logoutAdmin() {
+function disableAdminMode() {
   isAdmin = false;
   document.getElementById('mode-badge').textContent = '閲覧者モード';
   document.getElementById('mode-badge').className = 'badge';
   document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-  closeModeModal();
   showTab('input');
 }
-window.openModeModal = openModeModal;
-window.closeModeModal = closeModeModal;
-window.tryAdminLogin = tryAdminLogin;
+
+function logoutAdmin() {
+  disableAdminMode();
+}
 window.logoutAdmin = logoutAdmin;
 
 async function loginUser() {
