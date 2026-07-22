@@ -833,10 +833,16 @@ async function loginUser() {
   if (!db.users[username]) { msg.innerHTML = '<div class="alert alert-error">ユーザーが存在しません。管理者に登録を依頼してください。</div>'; return; }
   if (db.users[username].password !== password) { msg.innerHTML = '<div class="alert alert-error">パスワードが違います。</div>'; return; }
 
-  setDeviceOwner(username);
-  await upsertDeviceRecord(username);
-  applyUserSession(username);
   msg.innerHTML = '';
+  setDeviceOwner(username);
+  applyUserSession(username);
+
+  try {
+    await upsertDeviceRecord(username);
+  } catch (e) {
+    console.error('device record update error', e);
+    showAlert('ログインは完了しましたが、端末情報の保存に失敗しました。', 'info');
+  }
 }
 
 function logoutUser() {
