@@ -16,6 +16,9 @@
     --booked: #f5d0fe;
     --booked-border: #c026d3;
     --booked-text: #701a75;
+    --notify: #f59e0b;
+    --notify-bg: #fffbeb;
+    --notify-border: #fcd34d;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -23,31 +26,22 @@
   header {
     background: #111827; color: white; padding: 16px 24px;
     display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
   }
   header h1 { font-size: 1.3rem; font-weight: 700; }
-  .header-badges { display: flex; gap: 8px; align-items: center; }
+  .header-badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .badge { padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); }
   .badge.admin { background: rgba(255,255,255,0.25); }
-  .hidden-admin-trigger {
-    width: 18px;
-    height: 18px;
-    border: none;
-    border-radius: 4px;
-    background: #111827;
-    color: transparent;
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-    outline: none;
-    box-shadow: none;
+  .notify-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 10px; border-radius: 999px;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18);
+    font-size: 0.78rem; font-weight: 700; cursor: pointer;
   }
-  .hidden-admin-trigger:hover,
-  .hidden-admin-trigger:focus,
-  .hidden-admin-trigger:active {
-    background: #111827;
-    color: transparent;
-    box-shadow: none;
-    outline: none;
+  .notify-count {
+    min-width: 20px; height: 20px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #f59e0b; color: #111827; font-size: 0.72rem; padding: 0 6px;
   }
 
   .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; }
@@ -151,19 +145,40 @@
   .ratio-summary { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px; }
   .ratio-chip { display:inline-flex; align-items:center; gap:6px; padding:7px 10px; background:#f9fafb; border:1px solid var(--border); border-radius:999px; font-size:0.82rem; }
 
+  .chat-toggle { margin-top: 10px; }
+  .chat-wrap {
+    margin-top: 12px; background: white; border: 1px solid #e9d5ff;
+    border-radius: 10px; padding: 12px;
+  }
+  .chat-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 220px; overflow-y: auto; margin-bottom: 10px;
+  }
+  .chat-empty { color: var(--muted); font-size: 0.85rem; padding: 8px 0; }
+  .chat-item {
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    background: #fcfcff;
+  }
+  .chat-item.self { background: #eff6ff; border-color: #bfdbfe; }
+  .chat-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .chat-text { font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .chat-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+  .chat-form textarea { min-height: 72px; }
+
   .mode-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
 
   .alert { padding: 9px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.85rem; font-weight: 500; }
   .alert-success { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
   .alert-error { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
   .alert-info { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+  .alert-notify { background: var(--notify-bg); color: #92400e; border: 1px solid var(--notify-border); }
 
   .public-header { text-align: center; padding: 20px; background: #111827; color: white; border-radius: 8px; margin-bottom: 14px; }
   .public-header h2 { font-size: 1.3rem; margin-bottom: 4px; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100000; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 10px; padding: 24px; min-width: 300px; max-width: 520px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border: 1px solid var(--border); }
+  .modal { background: white; border-radius: 10px; padding: 24px; min-width: 300px; max-width: 680px; width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border: 1px solid var(--border); }
   .modal h2 { margin-bottom: 16px; font-size: 1rem; font-weight: 600; }
   .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
@@ -214,10 +229,24 @@
   .device-status.active { color: #14532d; background: #dcfce7; border-color: #86efac; }
   .device-status.revoked { color: #7f1d1d; background: #fee2e2; border-color: #fca5a5; }
 
+  .notify-list { display: flex; flex-direction: column; gap: 10px; }
+  .notify-item {
+    border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+    background: white;
+  }
+  .notify-item.unread {
+    background: #fffbeb; border-color: #fcd34d;
+  }
+  .notify-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .notify-title { font-weight: 700; font-size: 0.9rem; }
+  .notify-time { font-size: 0.76rem; color: var(--muted); }
+  .notify-body { font-size: 0.86rem; color: #374151; line-height: 1.5; }
+
   @media(max-width:600px) {
     .form-row { flex-direction: column; }
     .cal-day { font-size: 0.72rem; min-height: 50px; }
     .day-ratio-label, .day-booking-label { font-size: 0.52rem; }
+    .modal { width: 96%; padding: 16px; }
   }
 </style>
 </head>
@@ -225,6 +254,10 @@
 <header>
   <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
+    <button class="notify-pill" id="notify-pill" onclick="openNotificationModal()" style="display:none;">
+      <span>通知</span>
+      <span class="notify-count" id="notify-count">0</span>
+    </button>
     <span class="badge" id="mode-badge">閲覧者モード</span>
   </div>
 </header>
@@ -468,6 +501,16 @@
   </div>
 </div>
 
+<div id="notification-modal" class="modal-overlay">
+  <div class="modal">
+    <h2>通知一覧</h2>
+    <div id="notification-modal-body" class="notify-list"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="markAllNotificationsRead()">すべて既読</button>
+      <button class="btn btn-primary" onclick="closeNotificationModal()">閉じる</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -494,6 +537,16 @@ const DEVICE_OWNER_KEY = 'scheduleAppDeviceOwner';
 const DEVICE_ID_KEY = 'scheduleAppDeviceId';
 
 const CHANGE_HISTORY = [
+  {
+    date: '2026-07-22',
+    title: '予約チャットと通知の追加',
+    items: [
+      '予約ごとに専用チャットを追加',
+      '予約追加時にグループメンバーへ通知を保存',
+      'チャット送信時に送信者以外へ通知を保存',
+      '通知一覧と未読バッジを追加'
+    ]
+  },
   {
     date: '2026-07-22',
     title: '端末保存ログイン管理の追加',
@@ -531,7 +584,7 @@ const CHANGE_HISTORY = [
 ];
 
 function getDefaultData() {
-  return { users: {}, groups: {}, schedules: {}, permissions: {}, bookings: {} };
+  return { users: {}, groups: {}, schedules: {}, permissions: {}, bookings: {}, bookingChats: {}, notifications: {} };
 }
 
 let db = getDefaultData();
@@ -544,6 +597,7 @@ let inputSelections = {};
 let publicGroupIds = [];
 let adminHash = null;
 let selectedPrivateUser = '';
+let shownNotificationIds = new Set();
 
 const now = new Date();
 let inputYear = now.getFullYear(), inputMonth = now.getMonth();
@@ -590,7 +644,9 @@ function normalizeDB(raw) {
     groups: raw.groups && typeof raw.groups === 'object' ? raw.groups : {},
     schedules: raw.schedules && typeof raw.schedules === 'object' ? raw.schedules : {},
     permissions: raw.permissions && typeof raw.permissions === 'object' ? raw.permissions : {},
-    bookings: raw.bookings && typeof raw.bookings === 'object' ? raw.bookings : {}
+    bookings: raw.bookings && typeof raw.bookings === 'object' ? raw.bookings : {},
+    bookingChats: raw.bookingChats && typeof raw.bookingChats === 'object' ? raw.bookingChats : {},
+    notifications: raw.notifications && typeof raw.notifications === 'object' ? raw.notifications : {}
   };
   Object.keys(normalized.schedules).forEach(username => {
     const sched = normalized.schedules[username] || {};
@@ -599,9 +655,13 @@ function normalizeDB(raw) {
   });
   Object.keys(normalized.users).forEach(username => {
     if (!Array.isArray(normalized.permissions[username])) normalized.permissions[username] = [];
+    if (!Array.isArray(normalized.notifications[username])) normalized.notifications[username] = [];
   });
   Object.keys(normalized.bookings).forEach(groupId => {
     if (!Array.isArray(normalized.bookings[groupId])) normalized.bookings[groupId] = [];
+  });
+  Object.keys(normalized.bookingChats).forEach(bookingId => {
+    if (!Array.isArray(normalized.bookingChats[bookingId])) normalized.bookingChats[bookingId] = [];
   });
   return normalized;
 }
@@ -679,8 +739,126 @@ async function clearCurrentDeviceFromFirebase() {
   }).catch(err => console.error('clear current device error', err));
 }
 
+function escapeHtml(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function ensureNotificationArray(username) {
+  if (!Array.isArray(db.notifications[username])) db.notifications[username] = [];
+}
+
+function createNotification(username, payload) {
+  ensureNotificationArray(username);
+  db.notifications[username].unshift({
+    id: `n_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    createdAt: new Date().toISOString(),
+    read: false,
+    ...payload
+  });
+  db.notifications[username] = db.notifications[username].slice(0, 100);
+}
+
+function notifyGroupMembers(groupId, actor, payloadBuilder) {
+  const members = Array.isArray(db.groups[groupId]?.members) ? db.groups[groupId].members : [];
+  members.forEach(username => {
+    if (username === actor) return;
+    createNotification(username, payloadBuilder(username));
+  });
+}
+
+function getNotifications(username) {
+  return Array.isArray(db.notifications[username]) ? db.notifications[username] : [];
+}
+
+function getUnreadNotifications(username) {
+  return getNotifications(username).filter(item => !item.read);
+}
+
+function renderNotificationBadge() {
+  const pill = document.getElementById('notify-pill');
+  const countEl = document.getElementById('notify-count');
+  if (!pill || !countEl) return;
+  if (!currentUser) {
+    pill.style.display = 'none';
+    return;
+  }
+  const unread = getUnreadNotifications(currentUser).length;
+  pill.style.display = 'inline-flex';
+  countEl.textContent = String(unread);
+  countEl.style.display = unread ? 'inline-flex' : 'none';
+}
+
+function renderNotificationModal() {
+  const body = document.getElementById('notification-modal-body');
+  if (!body) return;
+  if (!currentUser) {
+    body.innerHTML = '<div class="notify-item">ログインすると通知が表示されます。</div>';
+    return;
+  }
+  const items = getNotifications(currentUser);
+  if (!items.length) {
+    body.innerHTML = '<div class="notify-item">通知はまだありません。</div>';
+    return;
+  }
+  body.innerHTML = items.map(item => `
+    <div class="notify-item ${item.read ? '' : 'unread'}">
+      <div class="notify-head">
+        <div class="notify-title">${escapeHtml(item.title || '通知')}</div>
+        <div class="notify-time">${formatDateTime(item.createdAt)}</div>
+      </div>
+      <div class="notify-body">${escapeHtml(item.body || '')}</div>
+    </div>
+  `).join('');
+}
+
+function openNotificationModal() {
+  const modal = document.getElementById('notification-modal');
+  if (!modal) return;
+  renderNotificationModal();
+  modal.classList.add('open');
+  markAllNotificationsRead(false);
+}
+
+function closeNotificationModal() {
+  const modal = document.getElementById('notification-modal');
+  if (modal) modal.classList.remove('open');
+}
+
+function markAllNotificationsRead(showToast = true) {
+  if (!currentUser) return;
+  const items = getNotifications(currentUser);
+  let changed = false;
+  items.forEach(item => {
+    if (!item.read) {
+      item.read = true;
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveData();
+    renderNotificationBadge();
+    renderNotificationModal();
+    if (showToast) showAlert('通知を既読にしました。', 'success');
+  }
+}
+
+function showUnreadNotificationToasts() {
+  if (!currentUser) return;
+  const unread = getUnreadNotifications(currentUser);
+  unread.slice().reverse().forEach(item => {
+    if (shownNotificationIds.has(item.id)) return;
+    shownNotificationIds.add(item.id);
+    showAlert(`${item.title} - ${item.body}`, 'notify', 4200);
+  });
+}
+
+function getBookingChatMessages(bookingId) {
+  return Array.isArray(db.bookingChats[bookingId]) ? db.bookingChats[bookingId] : [];
+}
+
 function applyUserSession(username) {
   currentUser = username;
+  shownNotificationIds = new Set();
   if (username === 'あおい') {
     enableAdminMode();
   } else {
@@ -705,6 +883,8 @@ function applyUserSession(username) {
   renderInputCalendar();
   renderPermissionList();
   renderPrivateUserOptions();
+  renderNotificationBadge();
+  showUnreadNotificationToasts();
 }
 
 function forceLoggedOutByAdmin() {
@@ -717,6 +897,7 @@ function forceLoggedOutByAdmin() {
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
   document.getElementById('login-msg').innerHTML = '<div class="alert alert-error">管理者によりこの端末の保存ログインが解除されました。もう一度ログインしてください。</div>';
+  renderNotificationBadge();
   refreshUI();
 }
 
@@ -730,6 +911,8 @@ function refreshUI() {
   if (tabId === 'manage' && isAdmin) renderAdminManageTab();
   if (tabId === 'devices' && isAdmin) renderDeviceManagementTab();
   if (tabId === 'history') renderHistoryTab();
+  renderNotificationBadge();
+  if (currentUser) showUnreadNotificationToasts();
 }
 
 onValue(DB_REF, (snapshot) => {
@@ -856,6 +1039,7 @@ function logoutUser() {
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
+  renderNotificationBadge();
 }
 window.loginUser = loginUser;
 window.logoutUser = logoutUser;
@@ -871,6 +1055,7 @@ async function resetDeviceOwner() {
   document.getElementById('input-area').style.display = 'none';
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
+  renderNotificationBadge();
   showAlert('この端末の保存ログインを解除しました。', 'success');
 }
 window.resetDeviceOwner = resetDeviceOwner;
@@ -1043,8 +1228,8 @@ function renderPermissionList() {
 
   el.innerHTML = users.map(u => `
     <label class="permission-chip">
-      <input type="checkbox" value="${u}" ${allowed.includes(u) ? 'checked' : ''}>
-      <span>${u}</span>
+      <input type="checkbox" value="${escapeHtml(u)}" ${allowed.includes(u) ? 'checked' : ''}>
+      <span>${escapeHtml(u)}</span>
     </label>
   `).join('');
 }
@@ -1078,7 +1263,7 @@ function togglePublicGroup(id, checked) {
   if (checked) {
     publicGroupIds = [id];
     document.querySelectorAll('#public-group-selector input[type=checkbox]').forEach(cb => {
-      cb.checked = cb.getAttribute('onchange')?.includes(`'${id}'`) || false;
+      cb.checked = cb.dataset.groupId === id;
     });
   } else {
     publicGroupIds = [];
@@ -1105,13 +1290,13 @@ function renderPublicGroupOptions() {
   el.innerHTML = groups.map(([id, g]) => {
     const memberRows = (g.members || []).map(name => {
       const unanswered = hasAnsweredInMonth(name, publicYear, publicMonth) ? '' : ' <span style="color:#dc2626;font-weight:700;">未回答</span>';
-      return `<div style="font-size:0.82rem;color:#374151;padding-left:38px;">- ${name}${unanswered}</div>`;
+      return `<div style="font-size:0.82rem;color:#374151;padding-left:38px;">- ${escapeHtml(name)}${unanswered}</div>`;
     }).join('');
     return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px;background:var(--bg);margin-bottom:8px;">
       <label class="user-item" style="cursor:pointer;background:white;margin-bottom:${(g.members||[]).length ? '8px' : '0'};">
-        <input type="checkbox" ${publicGroupIds.includes(id)?'checked':''} onchange="togglePublicGroup('${id}',this.checked)">
-        <div class="user-avatar">${(g.name[0]||'G').toUpperCase()}</div>
-        <span class="user-name">${g.name}</span>
+        <input type="checkbox" data-group-id="${id}" ${publicGroupIds.includes(id)?'checked':''} onchange="togglePublicGroup('${id}',this.checked)">
+        <div class="user-avatar">${escapeHtml((g.name[0]||'G').toUpperCase())}</div>
+        <span class="user-name">${escapeHtml(g.name)}</span>
       </label>
       ${memberRows}
     </div>`;
@@ -1212,7 +1397,7 @@ function renderPublicBookingForm(groups) {
     formWrap.style.display = 'none';
     return;
   }
-  msgEl.innerHTML = '<div class="alert alert-info">予約は日付とメモだけを登録します。あとから削除できます。</div>';
+  msgEl.innerHTML = '<div class="alert alert-info">予約は日付とメモを登録できます。予約ごとにチャットも使えます。</div>';
   formWrap.style.display = 'block';
   dateInput.value = dateInput.value || `${publicYear}-${pad(publicMonth+1)}-01`;
 }
@@ -1242,13 +1427,22 @@ function savePublicBooking() {
   }
   const selectedGroupId = publicGroupIds[0];
   if (!Array.isArray(db.bookings[selectedGroupId])) db.bookings[selectedGroupId] = [];
-  db.bookings[selectedGroupId].push({
+  const booking = {
     id: `b_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     date,
     note,
     createdBy: currentUser,
     createdAt: new Date().toISOString()
-  });
+  };
+  db.bookings[selectedGroupId].push(booking);
+  if (!Array.isArray(db.bookingChats[booking.id])) db.bookingChats[booking.id] = [];
+  notifyGroupMembers(selectedGroupId, currentUser, () => ({
+    type: 'booking',
+    groupId: selectedGroupId,
+    bookingId: booking.id,
+    title: '新しい予約が追加されました',
+    body: `${currentUser}さんが ${date} に予約を追加しました。`
+  }));
   saveData();
   touchCurrentDevice();
   clearPublicBookingForm();
@@ -1267,9 +1461,75 @@ function deletePublicBooking(groupId, bookingId) {
   }
   if (!confirm('この予約を削除しますか？')) return;
   db.bookings[groupId] = items.filter(x => x.id !== bookingId);
+  delete db.bookingChats[bookingId];
   saveData();
   renderPublicCalendar();
   showAlert('予約を削除しました。', 'success');
+}
+
+function toggleBookingChat(bookingId) {
+  const wrap = document.getElementById(`chat-wrap-${bookingId}`);
+  if (!wrap) return;
+  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+}
+
+function sendBookingChat(groupId, bookingId) {
+  if (!currentUser) {
+    showAlert('ログインしてください。', 'error');
+    return;
+  }
+  const textarea = document.getElementById(`chat-input-${bookingId}`);
+  if (!textarea) return;
+  const text = textarea.value.trim();
+  if (!text) {
+    showAlert('メッセージを入力してください。', 'error');
+    return;
+  }
+  if (!Array.isArray(db.bookingChats[bookingId])) db.bookingChats[bookingId] = [];
+  db.bookingChats[bookingId].push({
+    id: `c_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    text,
+    createdBy: currentUser,
+    createdAt: new Date().toISOString()
+  });
+  const booking = getGroupBookings(groupId).find(item => item.id === bookingId);
+  notifyGroupMembers(groupId, currentUser, () => ({
+    type: 'chat',
+    groupId,
+    bookingId,
+    title: '予約チャットに新着メッセージ',
+    body: `${currentUser}さんが ${booking?.date || ''} の予約チャットに投稿しました。`
+  }));
+  textarea.value = '';
+  saveData();
+  renderPublicCalendar();
+  showAlert('チャットを送信しました。', 'success');
+}
+
+function renderBookingChat(groupId, booking) {
+  const messages = getBookingChatMessages(booking.id).sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  return `
+    <div class="chat-wrap" id="chat-wrap-${booking.id}" style="display:none;">
+      <div class="chat-list">
+        ${messages.length ? messages.map(msg => `
+          <div class="chat-item ${msg.createdBy === currentUser ? 'self' : ''}">
+            <div class="chat-meta">
+              <span>${escapeHtml(msg.createdBy)}</span>
+              <span>${formatDateTime(msg.createdAt)}</span>
+            </div>
+            <div class="chat-text">${escapeHtml(msg.text)}</div>
+          </div>
+        `).join('') : '<div class="chat-empty">まだメッセージはありません。</div>'}
+      </div>
+      <div class="chat-form">
+        <div class="form-group" style="margin:0;">
+          <label>チャット送信</label>
+          <textarea id="chat-input-${booking.id}" placeholder="この予約についてメッセージを書く"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="sendBookingChat('${groupId}','${booking.id}')">送信</button>
+      </div>
+    </div>
+  `;
 }
 
 function renderPublicBookingList(bookings, groups) {
@@ -1279,23 +1539,28 @@ function renderPublicBookingList(bookings, groups) {
     el.innerHTML = '<p style="color:var(--muted);">この月の予約はまだありません。</p>';
     return;
   }
-  const groupMap = Object.fromEntries(groups.map(g => [Object.entries(db.groups).find(([, v]) => v === g)?.[0], g.name]).filter(Boolean));
+  const groupMap = Object.fromEntries(Object.entries(db.groups).map(([gid, g]) => [gid, g.name]));
   el.innerHTML = bookings.map(item => {
     const canDelete = currentUser === item.createdBy || isAdmin;
-    const groupName = groupMap[item.groupId] || db.groups[item.groupId]?.name || '';
+    const groupName = groupMap[item.groupId] || '';
+    const chatCount = getBookingChatMessages(item.id).length;
     return `
       <div class="booking-card">
         <div class="booking-card-head">
           <div>
             <div class="booking-badge">📌 ${item.date}</div>
-            <div style="margin-top:8px;font-size:0.92rem;font-weight:600;">${item.note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            <div style="margin-top:8px;font-size:0.92rem;font-weight:600;">${escapeHtml(item.note)}</div>
           </div>
           <div style="text-align:right;font-size:0.8rem;color:var(--muted);">
-            <div>${groupName}</div>
-            <div>登録: ${item.createdBy}</div>
+            <div>${escapeHtml(groupName)}</div>
+            <div>登録: ${escapeHtml(item.createdBy)}</div>
           </div>
         </div>
-        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deletePublicBooking('${item.groupId}','${item.id}')">削除</button>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-secondary btn-sm chat-toggle" onclick="toggleBookingChat('${item.id}')">チャット ${chatCount}件</button>
+          ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deletePublicBooking('${item.groupId}','${item.id}')">削除</button>` : ''}
+        </div>
+        ${renderBookingChat(item.groupId, item)}
       </div>
     `;
   }).join('');
@@ -1322,6 +1587,8 @@ window.updatePublicMonthLabel = updatePublicMonthLabel;
 window.savePublicBooking = savePublicBooking;
 window.clearPublicBookingForm = clearPublicBookingForm;
 window.deletePublicBooking = deletePublicBooking;
+window.toggleBookingChat = toggleBookingChat;
+window.sendBookingChat = sendBookingChat;
 
 function getViewableUsers() {
   if (!currentUser) return [];
@@ -1345,7 +1612,7 @@ function renderPrivateUserOptions() {
     return;
   }
   if (!users.includes(selectedPrivateUser)) selectedPrivateUser = users[0];
-  select.innerHTML = users.map(u => `<option value="${u}" ${u===selectedPrivateUser ? 'selected' : ''}>${u}</option>`).join('');
+  select.innerHTML = users.map(u => `<option value="${escapeHtml(u)}" ${u===selectedPrivateUser ? 'selected' : ''}>${escapeHtml(u)}</option>`).join('');
   area.style.display = selectedPrivateUser ? 'block' : 'none';
 }
 
@@ -1406,8 +1673,8 @@ function renderHistoryTab() {
   el.innerHTML = CHANGE_HISTORY.map(item => `
     <div class="history-item">
       <div class="history-date">${item.date}</div>
-      <div style="font-weight:700; margin-bottom:6px;">${item.title}</div>
-      <ul>${item.items.map(text => `<li>${text}</li>`).join('')}</ul>
+      <div style="font-weight:700; margin-bottom:6px;">${escapeHtml(item.title)}</div>
+      <ul>${item.items.map(text => `<li>${escapeHtml(text)}</li>`).join('')}</ul>
     </div>
   `).join('');
 }
@@ -1451,7 +1718,7 @@ function renderDeviceManagementTab() {
       <div class="device-card">
         <div class="device-row">
           <div>
-            <div style="font-weight:700;">${username}</div>
+            <div style="font-weight:700;">${escapeHtml(username)}</div>
             <div class="device-meta">保存端末 ${activeCount} 台 / 登録端末 ${devices.length} 台</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1470,8 +1737,8 @@ function renderDeviceManagementTab() {
     <div class="device-card">
       <div class="device-row">
         <div>
-          <div style="font-weight:700;">${item.username}</div>
-          <div class="device-meta">端末ID: ${item.id}</div>
+          <div style="font-weight:700;">${escapeHtml(item.username)}</div>
+          <div class="device-meta">端末ID: ${escapeHtml(item.id)}</div>
         </div>
         <span class="device-status ${item.savedLogin && !item.revoked ? 'active' : 'revoked'}">
           ${item.savedLogin && !item.revoked ? '保存ログイン中' : '解除済み'}
@@ -1479,8 +1746,8 @@ function renderDeviceManagementTab() {
       </div>
       <div class="device-meta">
         最終利用: ${formatDateTime(item.lastSeen)}<br>
-        端末情報: ${(item.deviceLabel || 'unknown')}<br>
-        UA: ${(item.userAgent || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+        端末情報: ${escapeHtml(item.deviceLabel || 'unknown')}<br>
+        UA: ${escapeHtml(item.userAgent || '')}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
         <button class="btn btn-danger btn-sm" onclick="revokeDeviceUI('${item.id}')">この端末を解除</button>
@@ -1514,6 +1781,7 @@ function addUser() {
   db.users[name] = { password: pass };
   if (!db.schedules[name]) db.schedules[name] = { days: {}, times: {} };
   if (!Array.isArray(db.permissions[name])) db.permissions[name] = [];
+  if (!Array.isArray(db.notifications[name])) db.notifications[name] = [];
   saveData();
   renderAdminManageTab();
 }
@@ -1523,12 +1791,18 @@ async function deleteUser(name) {
   delete db.users[name];
   delete db.schedules[name];
   delete db.permissions[name];
+  delete db.notifications[name];
   Object.keys(db.permissions).forEach(owner => {
     db.permissions[owner] = (db.permissions[owner] || []).filter(u => u !== name);
   });
   Object.values(db.groups).forEach(g => { g.members = (g.members||[]).filter(m => m !== name); });
   Object.keys(db.bookings).forEach(groupId => {
+    const removedBookingIds = (db.bookings[groupId] || []).filter(item => item.createdBy === name).map(item => item.id);
     db.bookings[groupId] = (db.bookings[groupId] || []).filter(item => item.createdBy !== name);
+    removedBookingIds.forEach(id => delete db.bookingChats[id]);
+  });
+  Object.keys(db.bookingChats).forEach(bookingId => {
+    db.bookingChats[bookingId] = (db.bookingChats[bookingId] || []).filter(item => item.createdBy !== name);
   });
 
   const updates = {};
@@ -1574,6 +1848,11 @@ async function changeUserName(username) {
     db.permissions[owner] = (db.permissions[owner] || []).map(m => m === username ? trimmed : m);
   });
 
+  if (db.notifications[username]) {
+    db.notifications[trimmed] = db.notifications[username];
+    delete db.notifications[username];
+  }
+
   Object.values(db.groups).forEach(g => {
     if (!Array.isArray(g.members)) return;
     g.members = g.members.map(m => m === username ? trimmed : m);
@@ -1581,6 +1860,9 @@ async function changeUserName(username) {
 
   Object.keys(db.bookings).forEach(groupId => {
     db.bookings[groupId] = (db.bookings[groupId] || []).map(item => item.createdBy === username ? { ...item, createdBy: trimmed } : item);
+  });
+  Object.keys(db.bookingChats).forEach(bookingId => {
+    db.bookingChats[bookingId] = (db.bookingChats[bookingId] || []).map(item => item.createdBy === username ? { ...item, createdBy: trimmed } : item);
   });
 
   const updates = {};
@@ -1628,10 +1910,10 @@ function renderAdminUserList() {
     const activeDeviceCount = userDevices.filter(record => record.savedLogin && !record.revoked).length;
     return `
     <div class="user-item" style="flex-wrap:wrap;align-items:center;">
-      <div class="user-avatar" style="background:${colors[i%colors.length]}">${u[0].toUpperCase()}</div>
-      <span class="user-name">${u}</span>
+      <div class="user-avatar" style="background:${colors[i%colors.length]}">${escapeHtml(u[0].toUpperCase())}</div>
+      <span class="user-name">${escapeHtml(u)}</span>
       <span style="font-size:0.78rem;color:var(--muted);">端末 ${activeDeviceCount} 台</span>
-      <span class="pw-text" id="pw-text-${u}" style="display:none;">${db.users[u].password || ''}</span>
+      <span class="pw-text" id="pw-text-${u}" style="display:none;">${escapeHtml(db.users[u].password || '')}</span>
       <button class="btn btn-secondary btn-sm" onclick="togglePasswordVisibility('${u}')">👁</button>
       <button class="btn btn-secondary btn-sm" onclick="changeUserName('${u}')">名前変更</button>
       <button class="btn btn-secondary btn-sm" onclick="changeUserPassword('${u}')">PW変更</button>
@@ -1655,6 +1937,8 @@ function addGroup() {
 function deleteGroup(id) {
   if (!db.groups[id]) return;
   if (!confirm(`グループ "${db.groups[id].name}" を削除しますか？`)) return;
+  const removedBookings = db.bookings[id] || [];
+  removedBookings.forEach(item => delete db.bookingChats[item.id]);
   delete db.groups[id];
   delete db.bookings[id];
   saveData();
@@ -1682,7 +1966,7 @@ function renderAdminGroupList() {
   el.innerHTML = groups.map(([id, g]) => `
     <div class="group-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-        <strong>${g.name}</strong>
+        <strong>${escapeHtml(g.name)}</strong>
         <button class="btn btn-danger btn-sm" onclick="deleteGroup('${id}')">削除</button>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -1692,11 +1976,11 @@ function renderAdminGroupList() {
             border:1.5px solid ${(g.members||[]).includes(u)?'#2563eb':'var(--border)'};
             background:${(g.members||[]).includes(u)?'#dbeafe':'white'};">
             <input type="checkbox" ${(g.members||[]).includes(u)?'checked':''} onchange="toggleGroupMember('${id}','${u}')">
-            ${u}
+            ${escapeHtml(u)}
           </label>`).join('')}
         ${!users.length ? '<span style="color:var(--muted);">ユーザーがいません</span>' : ''}
       </div>
-      <div style="font-size:0.8rem;color:var(--muted);">メンバー: ${(g.members||[]).length>0 ? (g.members||[]).join(', ') : 'なし'}</div>
+      <div style="font-size:0.8rem;color:var(--muted);">メンバー: ${(g.members||[]).length>0 ? (g.members||[]).map(escapeHtml).join(', ') : 'なし'}</div>
     </div>`).join('');
 }
 
@@ -1738,7 +2022,7 @@ async function resetAll() {
   alert('全データをリセットしました。');
 }
 
-function showAlert(message, type) {
+function showAlert(message, type, timeout = 2200) {
   const div = document.createElement('div');
   div.className = `alert alert-${type}`;
   div.textContent = message;
@@ -1748,7 +2032,7 @@ function showAlert(message, type) {
   div.style.zIndex = '100001';
   div.style.boxShadow = '0 10px 25px rgba(0,0,0,0.12)';
   document.body.appendChild(div);
-  setTimeout(() => div.remove(), 2200);
+  setTimeout(() => div.remove(), timeout);
 }
 
 window.addUser = addUser;
@@ -1762,12 +2046,16 @@ window.toggleGroupMember = toggleGroupMember;
 window.exportData = exportData;
 window.importData = importData;
 window.resetAll = resetAll;
+window.openNotificationModal = openNotificationModal;
+window.closeNotificationModal = closeNotificationModal;
+window.markAllNotificationsRead = markAllNotificationsRead;
 
 async function initApp() {
   await ensureAdminHash();
   renderInputCalendar();
   updatePublicMonthLabel();
   renderHistoryTab();
+  renderNotificationBadge();
 
   const owner = getDeviceOwner();
   const record = getCurrentDeviceRecord();
@@ -1775,6 +2063,13 @@ async function initApp() {
     applyUserSession(owner);
   }
   touchCurrentDevice();
+
+  const modal = document.getElementById('notification-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeNotificationModal();
+    });
+  }
 }
 
 if (document.readyState === 'loading') {
