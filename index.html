@@ -307,13 +307,7 @@
 
     <div class="card">
       <h2>個人予定の閲覧許可</h2>
-      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">相手の名前を入力すると、その相手だけチェックできるようになります。</p>
-      <div class="form-row" style="align-items:flex-end;">
-        <div class="form-group" style="max-width:320px;">
-          <label>名前で検索</label>
-          <input type="text" id="permission-search-input" placeholder="名前を入力" autocomplete="off" oninput="renderPermissionList(this.value)">
-        </div>
-      </div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">同じグループにいる人だけ候補に表示されます。接点のない相手は表示されません。</p>
       <div id="permission-list" class="permission-grid"></div>
       <div style="margin-top:12px;">
         <button class="btn btn-primary" onclick="savePermissions()">許可設定を保存</button>
@@ -504,11 +498,7 @@ const CHANGE_HISTORY = [
     date: '2026-07-22',
     title: '端末保存ログイン管理の追加',
     items: [
-      '最初にログインした端末でユーザーを保存し、次回以降は自動ログインするように変更',
-      '予定データ本体はFirebaseのまま維持し、他ユーザーとのリアルタイム更新を継続',
-      '管理者がユーザーごとの保存端末数を確認できる端末管理タブを追加',
-      '管理者が特定端末の保存ログイン解除・全端末解除をできるように変更',
-      'ユーザー名変更・削除時に端末情報も連動するよう調整'
+      '最初にログインした端末でユーザーを保存し、次回以降は自動ログインするように変更'
     ]
   },
   {
@@ -1026,30 +1016,32 @@ function saveSchedule() {
   showAlert('保存しました！', 'success');
 }
 
-function renderPermissionList(keyword = '') {
+function getConnectedUsers(username) {
+  if (!username) return [];
+  const connected = new Set();
+  Object.values(db.groups || {}).forEach(group => {
+    const members = Array.isArray(group.members) ? group.members : [];
+    if (members.includes(username)) {
+      members.forEach(member => {
+        if (member !== username) connected.add(member);
+      });
+    }
+  });
+  return [...connected].sort((a, b) => a.localeCompare(b, 'ja'));
+}
+
+function renderPermissionList() {
   const el = document.getElementById('permission-list');
   if (!el || !currentUser) return;
-  const users = Object.keys(db.users).filter(u => u !== currentUser).sort((a,b) => a.localeCompare(b, 'ja'));
+  const users = getConnectedUsers(currentUser);
   const allowed = db.permissions[currentUser] || [];
-  const text = String(keyword || '').trim();
 
   if (!users.length) {
-    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">他のユーザーがいません。</p>';
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">同じグループの相手がいません。</p>';
     return;
   }
 
-  if (!text) {
-    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">上の入力欄に名前を入れると候補が表示されます。</p>';
-    return;
-  }
-
-  const matchedUsers = users.filter(u => u.includes(text));
-  if (!matchedUsers.length) {
-    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">一致するユーザーがいません。</p>';
-    return;
-  }
-
-  el.innerHTML = matchedUsers.map(u => `
+  el.innerHTML = users.map(u => `
     <label class="permission-chip">
       <input type="checkbox" value="${u}" ${allowed.includes(u) ? 'checked' : ''}>
       <span>${u}</span>
