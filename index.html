@@ -307,7 +307,13 @@
 
     <div class="card">
       <h2>個人予定の閲覧許可</h2>
-      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">チェックした相手だけが、あなたの個人予定タブを閲覧できます。</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">相手の名前を入力すると、その相手だけチェックできるようになります。</p>
+      <div class="form-row" style="align-items:flex-end;">
+        <div class="form-group" style="max-width:320px;">
+          <label>名前で検索</label>
+          <input type="text" id="permission-search-input" placeholder="名前を入力" autocomplete="off" oninput="renderPermissionList(this.value)">
+        </div>
+      </div>
       <div id="permission-list" class="permission-grid"></div>
       <div style="margin-top:12px;">
         <button class="btn btn-primary" onclick="savePermissions()">許可設定を保存</button>
@@ -1020,16 +1026,30 @@ function saveSchedule() {
   showAlert('保存しました！', 'success');
 }
 
-function renderPermissionList() {
+function renderPermissionList(keyword = '') {
   const el = document.getElementById('permission-list');
   if (!el || !currentUser) return;
   const users = Object.keys(db.users).filter(u => u !== currentUser).sort((a,b) => a.localeCompare(b, 'ja'));
   const allowed = db.permissions[currentUser] || [];
+  const text = String(keyword || '').trim();
+
   if (!users.length) {
     el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">他のユーザーがいません。</p>';
     return;
   }
-  el.innerHTML = users.map(u => `
+
+  if (!text) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">上の入力欄に名前を入れると候補が表示されます。</p>';
+    return;
+  }
+
+  const matchedUsers = users.filter(u => u.includes(text));
+  if (!matchedUsers.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">一致するユーザーがいません。</p>';
+    return;
+  }
+
+  el.innerHTML = matchedUsers.map(u => `
     <label class="permission-chip">
       <input type="checkbox" value="${u}" ${allowed.includes(u) ? 'checked' : ''}>
       <span>${u}</span>
@@ -1039,8 +1059,11 @@ function renderPermissionList() {
 
 function savePermissions() {
   if (!currentUser) return;
-  const checked = [...document.querySelectorAll('#permission-list input[type="checkbox"]:checked')].map(el => el.value);
-  db.permissions[currentUser] = checked;
+  const prev = Array.isArray(db.permissions[currentUser]) ? db.permissions[currentUser] : [];
+  const visibleChecked = [...document.querySelectorAll('#permission-list input[type="checkbox"]:checked')].map(el => el.value);
+  const visibleAll = [...document.querySelectorAll('#permission-list input[type="checkbox"]')].map(el => el.value);
+  const next = [...prev.filter(name => !visibleAll.includes(name)), ...visibleChecked];
+  db.permissions[currentUser] = [...new Set(next)];
   saveData();
   touchCurrentDevice();
   showAlert('閲覧許可を保存しました！', 'success');
