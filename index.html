@@ -369,7 +369,10 @@
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <h2>予定入力: <span id="current-username" style="color:#374151;font-weight:700;"></span></h2>
-        <button class="btn btn-secondary btn-sm" onclick="logoutUser()">ログアウト</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="releaseDeviceOwner()">端末固定解除</button>
+          <button class="btn btn-secondary btn-sm" onclick="logoutUser()">ログアウト</button>
+        </div>
       </div>
 
       <div class="form-row" style="margin-bottom:12px;align-items:center;">
@@ -600,6 +603,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 const DB_REF = ref(database, 'scheduleApp');
 const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
+const DEVICE_OWNER_KEY = 'scheduleAppDeviceOwner';
 
 /*
 const SHOW_UPDATE_NOTICE = true;
@@ -610,6 +614,16 @@ const UPDATE_NOTICE_BODY = `変更内容
 ・予約が入っている日は紫で見分けられるように調整`;
 */
 const CHANGE_HISTORY = [
+  {
+    date: '2026-07-22',
+    title: '端末固定ログインの追加',
+    items: [
+      '最初にログインしたユーザーをその端末に保存する機能を追加',
+      '一度ログインすると次回以降は自動で同じユーザーとしてログインするように変更',
+      '端末固定を解除するボタンを予定入力画面に追加',
+      'ログアウトしても端末固定が残るように変更'
+    ]
+  },
   {
     date: '2026-07-21',
     title: '公開カレンダー強化',
@@ -662,6 +676,39 @@ async function sha256Hex(text) {
   return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function getDeviceOwner() {
+  return localStorage.getItem(DEVICE_OWNER_KEY) || '';
+}
+
+function setDeviceOwner(username) {
+  localStorage.setItem(DEVICE_OWNER_KEY, username);
+}
+
+function clearDeviceOwner() {
+  localStorage.removeItem(DEVICE_OWNER_KEY);
+}
+
+function applyUserSession(username) {
+  currentUser = username;
+  document.getElementById('login-card').style.display = 'none';
+  document.getElementById('input-area').style.display = 'block';
+  document.getElementById('current-username').textContent = username;
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+
+  inputSelections = {};
+  currentInputType = 'full';
+  const sel = document.getElementById('input-type-select');
+  if (sel) sel.value = 'full';
+
+  const days = db.schedules[username]?.days || {};
+  Object.entries(days).forEach(([date, type]) => { inputSelections[date] = type; });
+
+  renderInputCalendar();
+  renderPermissionList();
+  renderPrivateUserOptions();
+}
+
 async function ensureAdminHash() {
   const defaultHash = await sha256Hex('0509');
   adminHash = defaultHash;
@@ -705,6 +752,19 @@ function normalizeDB(raw) {
 onValue(DB_REF, (snapshot) => {
   if (_isSaving) return;
   db = normalizeDB(snapshot.val());
+
+  const deviceOwner = getDeviceOwner();
+  if (deviceOwner && !db.users[deviceOwner]) {
+    clearDeviceOwner();
+    currentUser = null;
+    inputSelections = {};
+    selectedPrivateUser = '';
+    document.getElementById('login-card').style.display = 'block';
+    document.getElementById('input-area').style.display = 'none';
+  } else if (deviceOwner && db.users[deviceOwner] && currentUser !== deviceOwner) {
+    applyUserSession(deviceOwner);
+  }
+
   refreshUI();
 }, (err) => {
   console.error('Firebase read error', err);
@@ -864,28 +924,22 @@ function loginUser() {
   if (!db.users[username]) { msg.innerHTML = '<div class="alert alert-error">ユーザーが存在しません。管理者に登録を依頼してください。</div>'; return; }
   if (db.users[username].password !== password) { msg.innerHTML = '<div class="alert alert-error">パスワードが違います。</div>'; return; }
 
-  currentUser = username;
-  document.getElementById('login-card').style.display = 'none';
-  document.getElementById('input-area').style.display = 'block';
-  document.getElementById('current-username').textContent = username;
-  document.getElementById('login-username').value = '';
-  document.getElementById('login-password').value = '';
-
-  inputSelections = {};
-  currentInputType = 'full';
-  const sel = document.getElementById('input-type-select');
-  if (sel) sel.value = 'full';
-  const days = db.schedules[username]?.days || {};
-  Object.entries(days).forEach(([date, type]) => { inputSelections[date] = type; });
-
-  renderInputCalendar();
-  renderPermissionList();
-  renderPrivateUserOptions();
+  setDeviceOwner(username);
+  applyUserSession(username);
   msg.innerHTML = '';
+  showAlert('この端末を ' + username + ' 用に固定しました。', 'success');
 }
 
 function logoutUser() {
-  currentUser = null;
+  const owner = getDeviceOwner();
+  currentUser = owner || null;
+
+  if (currentUser && db.users[currentUser]) {
+    applyUserSession(currentUser);
+    showAlert('この端末は固定済みのため、同じユーザーでログインを保持します。', 'info');
+    return;
+  }
+
   inputSelections = {};
   selectedPrivateUser = '';
   document.getElementById('login-card').style.display = 'block';
@@ -893,8 +947,24 @@ function logoutUser() {
   document.getElementById('login-username').value = '';
   document.getElementById('login-password').value = '';
 }
+
+function releaseDeviceOwner() {
+  if (!confirm('この端末の固定ログインを解除しますか？')) return;
+  clearDeviceOwner();
+  currentUser = null;
+  inputSelections = {};
+  selectedPrivateUser = '';
+  document.getElementById('login-card').style.display = 'block';
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('current-username').textContent = '';
+  renderPrivateUserOptions();
+  showAlert('端末固定を解除しました。', 'success');
+}
 window.loginUser = loginUser;
 window.logoutUser = logoutUser;
+window.releaseDeviceOwner = releaseDeviceOwner;
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function toDateStr(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -1290,385 +1360,4 @@ function renderPublicBookingList(bookings, groups) {
         <div class="booking-card-head">
           <div>
             <div class="booking-badge">📌 ${item.date}</div>
-            <div style="margin-top:8px;font-size:0.92rem;font-weight:600;">${item.note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-          </div>
-          <div style="text-align:right;font-size:0.8rem;color:var(--muted);">
-            <div>${groupName}</div>
-            <div>登録: ${item.createdBy}</div>
-          </div>
-        </div>
-        ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deletePublicBooking('${item.groupId}','${item.id}')">削除</button>` : ''}
-      </div>
-    `;
-  }).join('');
-}
-
-function changePublicMonth(delta) {
-  publicMonth += delta;
-  if (publicMonth < 0) { publicMonth = 11; publicYear--; }
-  if (publicMonth > 11) { publicMonth = 0; publicYear++; }
-  updatePublicMonthLabel();
-  renderPublicGroupOptions();
-  renderPublicCalendar();
-}
-
-function updatePublicMonthLabel() {
-  const el = document.getElementById('public-month-label');
-  if (el) el.textContent = `${publicYear}年 ${publicMonth + 1}月`;
-}
-window.togglePublicGroup = togglePublicGroup;
-window.renderPublicGroupOptions = renderPublicGroupOptions;
-window.renderPublicCalendar = renderPublicCalendar;
-window.changePublicMonth = changePublicMonth;
-window.updatePublicMonthLabel = updatePublicMonthLabel;
-window.savePublicBooking = savePublicBooking;
-window.clearPublicBookingForm = clearPublicBookingForm;
-window.deletePublicBooking = deletePublicBooking;
-
-function getViewableUsers() {
-  if (!currentUser) return [];
-  return Object.keys(db.users).filter(username => username !== currentUser && (db.permissions[username] || []).includes(currentUser)).sort((a,b) => a.localeCompare(b, 'ja'));
-}
-
-function renderPrivateUserOptions() {
-  const select = document.getElementById('private-user-select');
-  const area = document.getElementById('private-calendar-area');
-  if (!select || !area) return;
-  if (!currentUser) {
-    select.innerHTML = '<option value="">ログインしてください</option>';
-    area.style.display = 'none';
-    return;
-  }
-  const users = getViewableUsers();
-  if (!users.length) {
-    selectedPrivateUser = '';
-    select.innerHTML = '<option value="">閲覧できるユーザーがいません</option>';
-    area.style.display = 'none';
-    return;
-  }
-  if (!users.includes(selectedPrivateUser)) selectedPrivateUser = users[0];
-  select.innerHTML = users.map(u => `<option value="${u}" ${u===selectedPrivateUser ? 'selected' : ''}>${u}</option>`).join('');
-  area.style.display = selectedPrivateUser ? 'block' : 'none';
-}
-
-function selectPrivateUser(username) {
-  selectedPrivateUser = username;
-  renderPrivateCalendar();
-}
-
-function renderPrivateCalendar() {
-  const cal = document.getElementById('private-calendar');
-  const title = document.getElementById('private-cal-title');
-  const area = document.getElementById('private-calendar-area');
-  if (!cal || !title || !area) return;
-  if (!currentUser || !selectedPrivateUser || !(db.permissions[selectedPrivateUser] || []).includes(currentUser)) {
-    area.style.display = 'none';
-    return;
-  }
-  area.style.display = 'block';
-  title.textContent = `${selectedPrivateUser} の予定 - ${privateYear}年 ${privateMonth + 1}月`;
-
-  const DOW = ['日','月','火','水','木','金','土'];
-  let html = DOW.map((d, i) => `<div class="cal-header${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
-
-  const firstDay = new Date(privateYear, privateMonth, 1).getDay();
-  const daysInMonth = new Date(privateYear, privateMonth + 1, 0).getDate();
-  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = `${privateYear}-${pad(privateMonth+1)}-${pad(d)}`;
-    const dow = new Date(privateYear, privateMonth, d).getDay();
-    const dayType = getDayType(selectedPrivateUser, ds);
-
-    let cls = 'cal-day';
-    if (dow === 0) cls += ' sun';
-    if (dow === 6) cls += ' sat';
-    if (ds === todayStr) cls += ' today';
-    if (dayType === 'full') cls += ' day-free';
-    else if (dayType === 'am') cls += ' day-am';
-    else if (dayType === 'pm') cls += ' day-pm';
-
-    html += `<div class="${cls}" title="${ds}"><span class="day-num">${d}</span></div>`;
-  }
-  cal.innerHTML = html;
-}
-
-function changePrivateMonth(delta) {
-  privateMonth += delta;
-  if (privateMonth < 0) { privateMonth = 11; privateYear--; }
-  if (privateMonth > 11) { privateMonth = 0; privateYear++; }
-  renderPrivateCalendar();
-}
-window.selectPrivateUser = selectPrivateUser;
-window.changePrivateMonth = changePrivateMonth;
-
-function renderHistoryTab() {
-  const el = document.getElementById('history-list');
-  if (!el) return;
-  el.innerHTML = CHANGE_HISTORY.map(item => `
-    <div class="history-item">
-      <div class="history-date">${item.date}</div>
-      <div style="font-weight:700; margin-bottom:6px;">${item.title}</div>
-      <ul>${item.items.map(text => `<li>${text}</li>`).join('')}</ul>
-    </div>
-  `).join('');
-}
-
-function renderAdminInputTab() { }
-
-function renderAdminManageTab() {
-  renderAdminUserList();
-  renderAdminGroupList();
-}
-
-function addUser() {
-  const nameInput = document.getElementById('admin-new-username');
-  const passInput = document.getElementById('admin-new-password');
-  const name = nameInput.value.trim();
-  const pass = passInput.value;
-  if (!name) { alert('ユーザー名を入力してください。'); return; }
-  if (!pass) { alert('パスワードを入力してください。'); return; }
-  if (db.users[name]) { alert('すでに存在するユーザー名です。'); return; }
-  nameInput.value = ''; passInput.value = '';
-  db.users[name] = { password: pass };
-  if (!db.schedules[name]) db.schedules[name] = { days: {}, times: {} };
-  if (!Array.isArray(db.permissions[name])) db.permissions[name] = [];
-  saveData();
-  renderAdminManageTab();
-}
-
-function deleteUser(name) {
-  if (!confirm(`"${name}" を削除しますか？`)) return;
-  delete db.users[name];
-  delete db.schedules[name];
-  delete db.permissions[name];
-  Object.keys(db.permissions).forEach(owner => {
-    db.permissions[owner] = (db.permissions[owner] || []).filter(u => u !== name);
-  });
-  Object.values(db.groups).forEach(g => { g.members = (g.members||[]).filter(m => m !== name); });
-  Object.keys(db.bookings).forEach(groupId => {
-    db.bookings[groupId] = (db.bookings[groupId] || []).filter(item => item.createdBy !== name);
-  });
-  saveData();
-  renderAdminManageTab();
-}
-
-function changeUserName(username) {
-  const newName = prompt(`"${username}" の新しい名前を入力してください。`);
-  if (!newName) return;
-  const trimmed = newName.trim();
-  if (!trimmed) { alert('名前を入力してください。'); return; }
-  if (trimmed === username) return;
-  if (db.users[trimmed]) { alert('その名前はすでに使われています。'); return; }
-
-  db.users[trimmed] = db.users[username];
-  delete db.users[username];
-
-  if (db.schedules[username]) {
-    db.schedules[trimmed] = db.schedules[username];
-    delete db.schedules[username];
-  }
-
-  if (db.permissions[username]) {
-    db.permissions[trimmed] = db.permissions[username];
-    delete db.permissions[username];
-  }
-  Object.keys(db.permissions).forEach(owner => {
-    db.permissions[owner] = (db.permissions[owner] || []).map(m => m === username ? trimmed : m);
-  });
-
-  Object.values(db.groups).forEach(g => {
-    if (!Array.isArray(g.members)) return;
-    g.members = g.members.map(m => m === username ? trimmed : m);
-  });
-
-  Object.keys(db.bookings).forEach(groupId => {
-    db.bookings[groupId] = (db.bookings[groupId] || []).map(item => item.createdBy === username ? { ...item, createdBy: trimmed } : item);
-  });
-
-  if (currentUser === username) {
-    currentUser = trimmed;
-    const el = document.getElementById('current-username');
-    if (el) el.textContent = trimmed;
-  }
-  if (selectedPrivateUser === username) selectedPrivateUser = trimmed;
-
-  saveData();
-  renderAdminManageTab();
-  alert('名前を変更しました。');
-}
-
-function changeUserPassword(username) {
-  const newPass = prompt(`"${username}" の新しいパスワードを入力してください。`);
-  if (!newPass) return;
-  db.users[username].password = newPass;
-  saveData();
-  renderAdminUserList();
-  alert('パスワードを変更しました。');
-}
-
-function togglePasswordVisibility(username) {
-  const el = document.getElementById(`pw-text-${username}`);
-  if (!el) return;
-  el.style.display = el.style.display === 'none' ? 'inline-block' : 'none';
-}
-
-function renderAdminUserList() {
-  const el = document.getElementById('admin-user-list');
-  const users = Object.keys(db.users).sort((a,b) => a.localeCompare(b,'ja'));
-  if (!users.length) { el.innerHTML = '<p style="color:var(--muted);">ユーザーがいません。</p>'; return; }
-  const colors = ['#2563eb','#7c3aed','#16a34a','#dc2626','#d97706','#0891b2','#be185d','#65a30d'];
-  el.innerHTML = users.map((u, i) => `
-    <div class="user-item" style="flex-wrap:wrap;align-items:center;">
-      <div class="user-avatar" style="background:${colors[i%colors.length]}">${u[0].toUpperCase()}</div>
-      <span class="user-name">${u}</span>
-      <span class="pw-text" id="pw-text-${u}" style="display:none;">${db.users[u].password || ''}</span>
-      <button class="btn btn-secondary btn-sm" onclick="togglePasswordVisibility('${u}')">👁</button>
-      <button class="btn btn-secondary btn-sm" onclick="changeUserName('${u}')">名前変更</button>
-      <button class="btn btn-secondary btn-sm" onclick="changeUserPassword('${u}')">PW変更</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteUser('${u}')">削除</button>
-    </div>`).join('');
-}
-
-function addGroup() {
-  const nameInput = document.getElementById('admin-group-name');
-  const name = nameInput.value.trim();
-  if (!name) { alert('グループ名を入力してください。'); return; }
-  if (Object.values(db.groups).some(g => g.name === name)) { alert('同じグループ名がすでにあります。'); nameInput.value=''; return; }
-  nameInput.value = '';
-  const id = 'g_' + Date.now();
-  db.groups[id] = { name, members: [] };
-  saveData();
-  renderAdminManageTab();
-}
-
-function deleteGroup(id) {
-  if (!db.groups[id]) return;
-  if (!confirm(`グループ "${db.groups[id].name}" を削除しますか？`)) return;
-  delete db.groups[id];
-  delete db.bookings[id];
-  saveData();
-  renderAdminManageTab();
-}
-
-function toggleGroupMember(groupId, username) {
-  const group = db.groups[groupId];
-  if (!group) return;
-  if (!Array.isArray(group.members)) group.members = [];
-  if (group.members.includes(username)) {
-    group.members = group.members.filter(m => m !== username);
-  } else {
-    group.members.push(username);
-  }
-  saveData();
-  renderAdminManageTab();
-}
-
-function renderAdminGroupList() {
-  const el = document.getElementById('admin-group-list');
-  const groups = Object.entries(db.groups).sort((a,b) => a[1].name.localeCompare(b[1].name,'ja'));
-  if (!groups.length) { el.innerHTML = '<p style="color:var(--muted);">グループがありません。</p>'; return; }
-  const users = Object.keys(db.users).sort((a,b) => a.localeCompare(b,'ja'));
-  el.innerHTML = groups.map(([id, g]) => `
-    <div class="group-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-        <strong>${g.name}</strong>
-        <button class="btn btn-danger btn-sm" onclick="deleteGroup('${id}')">削除</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        ${users.map(u => `
-          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.85rem;
-            padding:4px 8px;border-radius:6px;
-            border:1.5px solid ${(g.members||[]).includes(u)?'#2563eb':'var(--border)'};
-            background:${(g.members||[]).includes(u)?'#dbeafe':'white'};">
-            <input type="checkbox" ${(g.members||[]).includes(u)?'checked':''} onchange="toggleGroupMember('${id}','${u}')">
-            ${u}
-          </label>`).join('')}
-        ${!users.length ? '<span style="color:var(--muted);">ユーザーがいません</span>' : ''}
-      </div>
-      <div style="font-size:0.8rem;color:var(--muted);">メンバー: ${(g.members||[]).length>0 ? (g.members||[]).join(', ') : 'なし'}</div>
-    </div>`).join('');
-}
-
-function exportData() {
-  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `schedule-data-${toDateStr(new Date())}.json`;
-  a.click();
-}
-
-function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if (imported.users && imported.groups && imported.schedules) {
-        db = normalizeDB(imported);
-        saveData();
-        renderAdminManageTab();
-        alert('データを読み込みました。');
-      } else { alert('無効なデータ形式です。'); }
-    } catch { alert('ファイルの読み込みに失敗しました。'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-function resetAll() {
-  db = getDefaultData();
-  saveData();
-  logoutUser();
-  renderAdminManageTab();
-  alert('全データをリセットしました。');
-}
-
-function showAlert(message, type) {
-  const div = document.createElement('div');
-  div.className = `alert alert-${type}`;
-  div.textContent = message;
-  div.style.position = 'fixed';
-  div.style.right = '20px';
-  div.style.bottom = '20px';
-  div.style.zIndex = '100001';
-  div.style.boxShadow = '0 10px 25px rgba(0,0,0,0.12)';
-  document.body.appendChild(div);
-  setTimeout(() => div.remove(), 2200);
-}
-
-window.addUser = addUser;
-window.deleteUser = deleteUser;
-window.changeUserName = changeUserName;
-window.changeUserPassword = changeUserPassword;
-window.togglePasswordVisibility = togglePasswordVisibility;
-window.addGroup = addGroup;
-window.deleteGroup = deleteGroup;
-window.toggleGroupMember = toggleGroupMember;
-window.exportData = exportData;
-window.importData = importData;
-window.resetAll = resetAll;
-
-async function initApp() {
-  await ensureAdminHash();
-  renderInputCalendar();
-  setupMaintenanceSecretTrigger();
-  setupTitleSecretTrigger();
-  updateMaintenanceOverlay();
-  updatePublicMonthLabel();
-  // openUpdateNotice();
-  window.openModeModal = openModeModal;
-  window.closeModeModal = closeModeModal;
-  window.tryAdminLogin = tryAdminLogin;
-  window.logoutAdmin = logoutAdmin;
-}
-
-if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', initApp, { once: true });
-} else {
-  initApp();
-}
-</script>
-</body>
-</html>
+            <div style="margin-top:8px;font-size:0.92rem;font-weight:600;">${item.note.replace(/</g, '&lt
