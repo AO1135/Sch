@@ -164,6 +164,17 @@
   .chat-text { font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
   .chat-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
   .chat-form textarea { min-height: 72px; }
+  .chat-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chat-edit-box { margin-top: 8px; }
+  .notify-link {
+    display:inline-flex; align-items:center; gap:6px; margin-top:10px;
+    font-size:0.82rem; color:#92400e; background:#fff7ed; border:1px solid #fdba74;
+    border-radius:999px; padding:5px 10px; cursor:pointer;
+  }
+  .booking-highlight {
+    outline: 2px solid #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.14);
+  }
 
   .mode-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; }
 
@@ -807,6 +818,7 @@ function renderNotificationModal() {
         <div class="notify-time">${formatDateTime(item.createdAt)}</div>
       </div>
       <div class="notify-body">${escapeHtml(item.body || '')}</div>
+      ${item.bookingId ? `<button class="notify-link" onclick="jumpToBookingFromNotification('${item.id}')">該当予約を開く</button>` : ''}
     </div>
   `).join('');
 }
@@ -840,6 +852,46 @@ function markAllNotificationsRead(showToast = true) {
     renderNotificationModal();
     if (showToast) showAlert('通知を既読にしました。', 'success');
   }
+}
+
+function markNotificationsReadByBookingId(bookingId) {
+  if (!currentUser) return;
+  const items = getNotifications(currentUser);
+  let changed = false;
+  items.forEach(item => {
+    if (item.bookingId === bookingId && !item.read) {
+      item.read = true;
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveData();
+    renderNotificationBadge();
+    renderNotificationModal();
+  }
+}
+
+function jumpToBookingFromNotification(notificationId) {
+  if (!currentUser) return;
+  const item = getNotifications(currentUser).find(n => n.id === notificationId);
+  if (!item || !item.groupId || !item.bookingId) return;
+  publicGroupIds = [item.groupId];
+  closeNotificationModal();
+  const publicTabBtn = [...document.querySelectorAll('.tab-btn')].find(btn => btn.textContent.trim() === '公開カレンダー');
+  showTab('public', publicTabBtn || null);
+  renderPublicGroupOptions();
+  renderPublicCalendar();
+  setTimeout(() => {
+    const wrap = document.getElementById(`chat-wrap-${item.bookingId}`);
+    const card = document.getElementById(`booking-card-${item.bookingId}`);
+    if (wrap) wrap.style.display = 'block';
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('booking-highlight');
+      setTimeout(() => card.classList.remove('booking-highlight'), 2200);
+    }
+    markNotificationsReadByBookingId(item.bookingId);
+  }, 120);
 }
 
 function showUnreadNotificationToasts() {
@@ -1470,7 +1522,62 @@ function deletePublicBooking(groupId, bookingId) {
 function toggleBookingChat(bookingId) {
   const wrap = document.getElementById(`chat-wrap-${bookingId}`);
   if (!wrap) return;
-  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  const nextOpen = wrap.style.display === 'none';
+  wrap.style.display = nextOpen ? 'block' : 'none';
+  if (nextOpen) markNotificationsReadByBookingId(bookingId);
+}
+
+function startEditChat(bookingId, chatId) {
+  const box = document.getElementById(`chat-edit-box-${bookingId}-${chatId}`);
+  if (!box) return;
+  box.style.display = 'block';
+}
+
+function cancelEditChat(bookingId, chatId) {
+  const box = document.getElementById(`chat-edit-box-${bookingId}-${chatId}`);
+  if (!box) return;
+  box.style.display = 'none';
+}
+
+function saveEditChat(bookingId, chatId) {
+  const list = getBookingChatMessages(bookingId);
+  const item = list.find(msg => msg.id === chatId);
+  if (!item) return;
+  if (item.createdBy !== currentUser && !isAdmin) {
+    showAlert('自分のメッセージだけ編集できます。', 'error');
+    return;
+  }
+  const input = document.getElementById(`chat-edit-input-${bookingId}-${chatId}`);
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) {
+    showAlert('メッセージを入力してください。', 'error');
+    return;
+  }
+  item.text = text;
+  item.updatedAt = new Date().toISOString();
+  saveData();
+  renderPublicCalendar();
+  const wrap = document.getElementById(`chat-wrap-${bookingId}`);
+  if (wrap) wrap.style.display = 'block';
+  showAlert('チャットを編集しました。', 'success');
+}
+
+function deleteBookingChat(bookingId, chatId) {
+  const list = getBookingChatMessages(bookingId);
+  const item = list.find(msg => msg.id === chatId);
+  if (!item) return;
+  if (item.createdBy !== currentUser && !isAdmin) {
+    showAlert('自分のメッセージだけ削除できます。', 'error');
+    return;
+  }
+  if (!confirm('このメッセージを削除しますか？')) return;
+  db.bookingChats[bookingId] = list.filter(msg => msg.id !== chatId);
+  saveData();
+  renderPublicCalendar();
+  const wrap = document.getElementById(`chat-wrap-${bookingId}`);
+  if (wrap) wrap.style.display = 'block';
+  showAlert('チャットを削除しました。', 'success');
 }
 
 function sendBookingChat(groupId, bookingId) {
@@ -1511,15 +1618,31 @@ function renderBookingChat(groupId, booking) {
   return `
     <div class="chat-wrap" id="chat-wrap-${booking.id}" style="display:none;">
       <div class="chat-list">
-        ${messages.length ? messages.map(msg => `
+        ${messages.length ? messages.map(msg => {
+          const canManage = msg.createdBy === currentUser || isAdmin;
+          return `
           <div class="chat-item ${msg.createdBy === currentUser ? 'self' : ''}">
             <div class="chat-meta">
               <span>${escapeHtml(msg.createdBy)}</span>
               <span>${formatDateTime(msg.createdAt)}</span>
+              ${msg.updatedAt ? `<span>編集: ${formatDateTime(msg.updatedAt)}</span>` : ''}
             </div>
             <div class="chat-text">${escapeHtml(msg.text)}</div>
+            ${canManage ? `
+              <div class="chat-actions">
+                <button class="btn btn-secondary btn-sm" onclick="startEditChat('${booking.id}','${msg.id}')">編集</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteBookingChat('${booking.id}','${msg.id}')">削除</button>
+              </div>
+              <div class="chat-edit-box" id="chat-edit-box-${booking.id}-${msg.id}" style="display:none;">
+                <textarea id="chat-edit-input-${booking.id}-${msg.id}">${escapeHtml(msg.text)}</textarea>
+                <div class="chat-actions">
+                  <button class="btn btn-primary btn-sm" onclick="saveEditChat('${booking.id}','${msg.id}')">保存</button>
+                  <button class="btn btn-secondary btn-sm" onclick="cancelEditChat('${booking.id}','${msg.id}')">キャンセル</button>
+                </div>
+              </div>
+            ` : ''}
           </div>
-        `).join('') : '<div class="chat-empty">まだメッセージはありません。</div>'}
+        `}).join('') : '<div class="chat-empty">まだメッセージはありません。</div>'}
       </div>
       <div class="chat-form">
         <div class="form-group" style="margin:0;">
@@ -1545,7 +1668,7 @@ function renderPublicBookingList(bookings, groups) {
     const groupName = groupMap[item.groupId] || '';
     const chatCount = getBookingChatMessages(item.id).length;
     return `
-      <div class="booking-card">
+      <div class="booking-card" id="booking-card-${item.id}">
         <div class="booking-card-head">
           <div>
             <div class="booking-badge">📌 ${item.date}</div>
@@ -1588,6 +1711,10 @@ window.savePublicBooking = savePublicBooking;
 window.clearPublicBookingForm = clearPublicBookingForm;
 window.deletePublicBooking = deletePublicBooking;
 window.toggleBookingChat = toggleBookingChat;
+window.startEditChat = startEditChat;
+window.cancelEditChat = cancelEditChat;
+window.saveEditChat = saveEditChat;
+window.deleteBookingChat = deleteBookingChat;
 window.sendBookingChat = sendBookingChat;
 
 function getViewableUsers() {
@@ -2049,6 +2176,7 @@ window.resetAll = resetAll;
 window.openNotificationModal = openNotificationModal;
 window.closeNotificationModal = closeNotificationModal;
 window.markAllNotificationsRead = markAllNotificationsRead;
+window.jumpToBookingFromNotification = jumpToBookingFromNotification;
 
 async function initApp() {
   await ensureAdminHash();
