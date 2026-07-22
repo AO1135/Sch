@@ -118,11 +118,6 @@
   .cal-day.common-none .day-num { color: #7f1d1d; }
 
   .day-num { font-weight: 600; font-size: 0.85rem; line-height: 1; }
-  .day-time-label {
-    font-size: 0.6rem; font-weight: 600; line-height: 1.1; color: #713f12;
-    text-align: center; white-space: nowrap; overflow: hidden; max-width: 100%;
-    padding: 1px 4px; background: rgba(255,255,255,0.75); border-radius: 999px;
-  }
   .day-ratio-label {
     font-size: 0.58rem; line-height: 1.1; font-weight: 700;
     background: rgba(255,255,255,0.85); color: #111827; border-radius: 999px; padding: 2px 5px;
@@ -149,7 +144,6 @@
   .user-name { font-weight: 500; font-size: 0.875rem; flex: 1; }
 
   .group-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: 8px; border: 1.5px solid var(--border); margin-bottom: 6px; }
-
   .output-day { display: inline-flex; flex-direction: column; gap: 2px; padding: 8px 12px; background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; font-weight: 500; font-size: 0.875rem; color: #14532d; margin: 3px; }
   .booking-card { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
   .booking-card-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; }
@@ -169,134 +163,15 @@
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100000; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 10px; padding: 24px; min-width: 300px; max-width: 480px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border: 1px solid var(--border); }
+  .modal { background: white; border-radius: 10px; padding: 24px; min-width: 300px; max-width: 520px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border: 1px solid var(--border); }
   .modal h2 { margin-bottom: 16px; font-size: 1rem; font-weight: 600; }
   .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
   .pw-text { font-family: monospace; background: #f3f4f6; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.82rem; }
-
-  .maintenance-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: #111827;
-    color: white;
-    font-size: clamp(2rem, 8vw, 5rem);
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    cursor: default;
-    user-select: none;
-  }
-
-  .maintenance-overlay.active {
-    display: flex;
-    gap: 12px;
-  }
-
-  .update-notice-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99998;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(17, 24, 39, 0.55);
-    padding: 20px;
-  }
-
-  .update-notice-overlay.open {
-    display: flex;
-  }
-
-  .update-notice-modal {
-    position: relative;
-    width: min(680px, 100%);
-    max-height: 85vh;
-    overflow-y: auto;
-    background: white;
-    color: #111827;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.18);
-    padding: 28px 22px 22px;
-  }
-
-  .update-notice-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 48px;
-    height: 48px;
-    border: none;
-    border-radius: 999px;
-    background: #f3f4f6;
-    color: #111827;
-    font-size: 2rem;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .update-notice-close:hover {
-    background: #e5e7eb;
-  }
-
-  .update-notice-title {
-    font-size: 1.35rem;
-    font-weight: 800;
-    margin-bottom: 14px;
-    padding-right: 56px;
-  }
-
-  .update-notice-body {
-    white-space: pre-wrap;
-    line-height: 1.7;
-    font-size: 0.98rem;
-  }
-
-  .maintenance-admin-trigger {
-    width: 10px;
-    height: 10px;
-    border: none;
-    border-radius: 2px;
-    background: #111827;
-    color: transparent;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    box-shadow: none;
-    outline: none;
-  }
-
-  .maintenance-admin-trigger:hover,
-  .maintenance-admin-trigger:focus,
-  .maintenance-admin-trigger:active {
-    background: #111827;
-    color: transparent;
-    box-shadow: none;
-    outline: none;
-  }
-
-  .permission-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .permission-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .permission-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: white;
-    font-size: 0.85rem;
-    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 999px; background: white; font-size: 0.85rem; cursor: pointer;
   }
   .permission-chip input { accent-color: #111827; }
   .history-list { display:flex; flex-direction:column; gap:12px; }
@@ -305,15 +180,48 @@
   .history-item ul { margin:8px 0 0 18px; color:#374151; }
   .history-item li { margin:4px 0; }
 
+  .device-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+  .device-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .device-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .device-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    background: #f9fafb;
+  }
+  .device-status.active { color: #14532d; background: #dcfce7; border-color: #86efac; }
+  .device-status.revoked { color: #7f1d1d; background: #fee2e2; border-color: #fca5a5; }
+
   @media(max-width:600px) {
     .form-row { flex-direction: column; }
     .cal-day { font-size: 0.72rem; min-height: 50px; }
-    .day-time-label, .day-ratio-label, .day-booking-label { font-size: 0.52rem; }
+    .day-ratio-label, .day-booking-label { font-size: 0.52rem; }
   }
 </style>
 </head>
 <body>
-
 <header>
   <h1 id="app-title" style="cursor:default;user-select:none;">空き時間共有カレンダー</h1>
   <div class="header-badges">
@@ -329,6 +237,7 @@
   <button class="tab-btn" onclick="showTab('history', this)">変更履歴</button>
   <button class="tab-btn admin-only" onclick="showTab('admin', this)" style="display:none;">管理追加</button>
   <button class="tab-btn admin-only" onclick="showTab('manage', this)" style="display:none;">管理一覧</button>
+  <button class="tab-btn admin-only" onclick="showTab('devices', this)" style="display:none;">端末管理</button>
 </div>
 
 <div id="tab-input" class="section active">
@@ -354,9 +263,11 @@
         <h2>予定入力: <span id="current-username" style="color:#374151;font-weight:700;"></span></h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-secondary btn-sm" onclick="logoutUser()">ログアウト</button>
-          <button class="btn btn-danger btn-sm" onclick="resetDeviceOwner()">端末固定を解除</button>
+          <button class="btn btn-danger btn-sm" onclick="resetDeviceOwner()">この端末の保存ログイン解除</button>
         </div>
       </div>
+
+      <div class="alert alert-info" id="device-owner-info" style="margin-bottom:12px;"></div>
 
       <div class="form-row" style="margin-bottom:12px;align-items:center;">
         <div class="form-group" style="max-width:240px;">
@@ -371,10 +282,6 @@
 
       <div class="alert alert-info" style="margin-bottom:10px;">
         📅 <strong>空いている日をタップして入力してください。</strong>もう一度タップすると未設定に戻せます。
-      </div>
-
-      <div class="alert alert-info" id="input-type-info">
-        <strong>通常入力：</strong>入力タイプを選んでカレンダーを押すと反映されます。もう一度押すと未設定に戻せます。
       </div>
 
       <div class="legend" style="margin-bottom:12px;">
@@ -550,13 +457,24 @@
   <div class="card"><h2>グループ一覧</h2><div id="admin-group-list"></div></div>
 </div>
 
+<div id="tab-devices" class="section">
+  <div class="mode-panel"><h3>端末管理</h3><p style="font-size:0.85rem;color:var(--muted);">保存ログイン中の端末数や端末ごとの状態を管理できます。</p></div>
+  <div class="card">
+    <h2>ユーザーごとの端末数</h2>
+    <div id="device-summary-list"></div>
+  </div>
+  <div class="card">
+    <h2>保存ログイン端末一覧</h2>
+    <div id="device-list"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="mode-modal">
   <div class="modal">
     <h2>🔐 管理者ログイン</h2>
     <div class="form-group" style="margin-bottom:12px;">
       <label>管理者パスワード</label>
-      <input type="password" id="admin-password-input" placeholder="パスワードを入力" autocomplete="new-password"
-        onkeydown="if(event.key==='Enter')tryAdminLogin()">
+      <input type="password" id="admin-password-input" placeholder="パスワードを入力" autocomplete="new-password" onkeydown="if(event.key==='Enter')tryAdminLogin()">
     </div>
     <div id="mode-modal-msg"></div>
     <div class="modal-footer">
@@ -569,7 +487,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDqHcFOvjgNf08hJneUSJUU2deoqWSJVHw",
@@ -585,18 +503,22 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 const DB_REF = ref(database, 'scheduleApp');
+const META_REF = ref(database, 'scheduleAppMeta');
 const ADMIN_HASH_REF = ref(database, 'scheduleAppMeta/adminHash');
+const DEVICES_REF = ref(database, 'scheduleAppMeta/devices');
 const DEVICE_OWNER_KEY = 'scheduleAppDeviceOwner';
+const DEVICE_ID_KEY = 'scheduleAppDeviceId';
 
 const CHANGE_HISTORY = [
   {
     date: '2026-07-22',
-    title: '端末固定ログインの追加',
+    title: '端末保存ログイン管理の追加',
     items: [
       '最初にログインした端末でユーザーを保存し、次回以降は自動ログインするように変更',
-      '予定データ自体はFirebaseのままにして、他ユーザーとの共有とリアルタイム更新は維持',
-      '端末固定を解除するボタンを追加',
-      'ユーザー名変更・削除時に端末保存情報も整合するよう調整'
+      '予定データ本体はFirebaseのまま維持し、他ユーザーとのリアルタイム更新を継続',
+      '管理者がユーザーごとの保存端末数を確認できる端末管理タブを追加',
+      '管理者が特定端末の保存ログイン解除・全端末解除をできるように変更',
+      'ユーザー名変更・削除時に端末情報も連動するよう調整'
     ]
   },
   {
@@ -628,22 +550,35 @@ const CHANGE_HISTORY = [
   }
 ];
 
-function getDefaultData() { return { users: {}, groups: {}, schedules: {}, permissions: {}, bookings: {} }; }
+function getDefaultData() {
+  return { users: {}, groups: {}, schedules: {}, permissions: {}, bookings: {} };
+}
 
 let db = getDefaultData();
+let meta = { adminHash: null, devices: {} };
 let _isSaving = false;
 let isAdmin = false;
 let currentUser = null;
 let currentInputType = 'full';
 let inputSelections = {};
+let publicGroupIds = [];
+let adminHash = null;
+let selectedPrivateUser = '';
 
 const now = new Date();
 let inputYear = now.getFullYear(), inputMonth = now.getMonth();
 let publicYear = now.getFullYear(), publicMonth = now.getMonth();
 let privateYear = now.getFullYear(), privateMonth = now.getMonth();
-let publicGroupIds = [];
-let adminHash = null;
-let selectedPrivateUser = '';
+
+function getDeviceId() {
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+}
+const deviceId = getDeviceId();
 
 async function sha256Hex(text) {
   const bytes = new TextEncoder().encode(text);
@@ -659,47 +594,6 @@ async function ensureAdminHash() {
   } catch (e) {
     console.error('admin hash init error', e);
   }
-}
-
-function getDeviceOwner() {
-  return localStorage.getItem(DEVICE_OWNER_KEY) || '';
-}
-function setDeviceOwner(username) {
-  localStorage.setItem(DEVICE_OWNER_KEY, username);
-}
-function clearDeviceOwner() {
-  localStorage.removeItem(DEVICE_OWNER_KEY);
-}
-function applyUserSession(username) {
-  currentUser = username;
-  document.getElementById('login-card').style.display = 'none';
-  document.getElementById('input-area').style.display = 'block';
-  document.getElementById('current-username').textContent = username;
-  document.getElementById('login-username').value = '';
-  document.getElementById('login-password').value = '';
-
-  inputSelections = {};
-  currentInputType = 'full';
-  const sel = document.getElementById('input-type-select');
-  if (sel) sel.value = 'full';
-  const days = db.schedules[username]?.days || {};
-  Object.entries(days).forEach(([date, type]) => { inputSelections[date] = type; });
-
-  renderInputCalendar();
-  renderPermissionList();
-  renderPrivateUserOptions();
-}
-function resetDeviceOwner() {
-  if (!confirm('この端末の固定ユーザー設定を解除しますか？')) return;
-  clearDeviceOwner();
-  currentUser = null;
-  inputSelections = {};
-  selectedPrivateUser = '';
-  document.getElementById('login-card').style.display = 'block';
-  document.getElementById('input-area').style.display = 'none';
-  document.getElementById('login-username').value = '';
-  document.getElementById('login-password').value = '';
-  showAlert('端末固定を解除しました。', 'success');
 }
 
 function saveData() {
@@ -732,6 +626,127 @@ function normalizeDB(raw) {
   return normalized;
 }
 
+function normalizeMeta(raw) {
+  return {
+    adminHash: raw && typeof raw.adminHash === 'string' ? raw.adminHash : null,
+    devices: raw && raw.devices && typeof raw.devices === 'object' ? raw.devices : {}
+  };
+}
+
+function getDeviceOwner() {
+  return localStorage.getItem(DEVICE_OWNER_KEY) || '';
+}
+function setDeviceOwner(username) {
+  localStorage.setItem(DEVICE_OWNER_KEY, username);
+}
+function clearDeviceOwner() {
+  localStorage.removeItem(DEVICE_OWNER_KEY);
+}
+function getCurrentDeviceRecord() {
+  return meta.devices[deviceId] || null;
+}
+function isCurrentDeviceRevoked() {
+  const record = getCurrentDeviceRecord();
+  return !!record && record.revoked === true;
+}
+async function upsertDeviceRecord(username) {
+  const payload = {
+    username,
+    savedLogin: true,
+    revoked: false,
+    lastSeen: new Date().toISOString(),
+    userAgent: navigator.userAgent || '',
+    deviceLabel: navigator.platform || 'unknown'
+  };
+  await update(META_REF, {
+    [`devices/${deviceId}`]: payload
+  });
+}
+async function touchCurrentDevice() {
+  const owner = getDeviceOwner();
+  if (!owner) return;
+  const current = meta.devices[deviceId] || {};
+  await update(META_REF, {
+    [`devices/${deviceId}/lastSeen`]: new Date().toISOString(),
+    [`devices/${deviceId}/userAgent`]: navigator.userAgent || current.userAgent || '',
+    [`devices/${deviceId}/deviceLabel`]: navigator.platform || current.deviceLabel || 'unknown',
+    [`devices/${deviceId}/username`]: owner,
+    [`devices/${deviceId}/savedLogin`]: true,
+    [`devices/${deviceId}/revoked`]: false
+  }).catch(err => console.error('device touch error', err));
+}
+async function revokeDevice(targetDeviceId) {
+  await update(META_REF, {
+    [`devices/${targetDeviceId}/revoked`]: true,
+    [`devices/${targetDeviceId}/savedLogin`]: false
+  });
+}
+async function revokeAllDevicesForUser(username) {
+  const updates = {};
+  Object.entries(meta.devices || {}).forEach(([id, record]) => {
+    if (record.username === username && record.savedLogin) {
+      updates[`devices/${id}/revoked`] = true;
+      updates[`devices/${id}/savedLogin`] = false;
+    }
+  });
+  if (Object.keys(updates).length) await update(META_REF, updates);
+}
+async function clearCurrentDeviceFromFirebase() {
+  await update(META_REF, {
+    [`devices/${deviceId}/savedLogin`]: false,
+    [`devices/${deviceId}/revoked`]: true,
+    [`devices/${deviceId}/lastSeen`]: new Date().toISOString()
+  }).catch(err => console.error('clear current device error', err));
+}
+
+function applyUserSession(username) {
+  currentUser = username;
+  document.getElementById('login-card').style.display = 'none';
+  document.getElementById('input-area').style.display = 'block';
+  document.getElementById('current-username').textContent = username;
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+
+  inputSelections = {};
+  currentInputType = 'full';
+  const sel = document.getElementById('input-type-select');
+  if (sel) sel.value = 'full';
+  const days = db.schedules[username]?.days || {};
+  Object.entries(days).forEach(([date, type]) => { inputSelections[date] = type; });
+
+  const info = document.getElementById('device-owner-info');
+  if (info) info.innerHTML = `この端末は <strong>${username}</strong> で保存ログイン中です。`;
+
+  renderInputCalendar();
+  renderPermissionList();
+  renderPrivateUserOptions();
+}
+
+function forceLoggedOutByAdmin() {
+  clearDeviceOwner();
+  currentUser = null;
+  inputSelections = {};
+  selectedPrivateUser = '';
+  document.getElementById('login-card').style.display = 'block';
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-msg').innerHTML = '<div class="alert alert-error">管理者によりこの端末の保存ログインが解除されました。もう一度ログインしてください。</div>';
+  refreshUI();
+}
+
+function refreshUI() {
+  const activeTab = document.querySelector('.section.active');
+  const tabId = activeTab ? activeTab.id.replace('tab-', '') : 'input';
+  if (tabId === 'input') { if (currentUser) { renderInputCalendar(); renderPermissionList(); } }
+  if (tabId === 'public') renderPublicCalendar();
+  if (tabId === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
+  if (tabId === 'admin' && isAdmin) renderAdminInputTab();
+  if (tabId === 'manage' && isAdmin) renderAdminManageTab();
+  if (tabId === 'devices' && isAdmin) renderDeviceManagementTab();
+  if (tabId === 'history') renderHistoryTab();
+}
+
 onValue(DB_REF, (snapshot) => {
   if (_isSaving) return;
   db = normalizeDB(snapshot.val());
@@ -744,26 +759,33 @@ onValue(DB_REF, (snapshot) => {
   }
 
   const owner = getDeviceOwner();
-  if (!currentUser && owner && db.users[owner]) {
+  if (!currentUser && owner && db.users[owner] && !isCurrentDeviceRevoked()) {
     applyUserSession(owner);
   }
-
   refreshUI();
 }, (err) => {
   console.error('Firebase read error', err);
   refreshUI();
 });
 
-function refreshUI() {
-  const activeTab = document.querySelector('.section.active');
-  const tabId = activeTab ? activeTab.id.replace('tab-', '') : 'input';
-  if (tabId === 'input') { if (currentUser) { renderInputCalendar(); renderPermissionList(); } }
-  if (tabId === 'public') renderPublicCalendar();
-  if (tabId === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
-  if (tabId === 'admin' && isAdmin) renderAdminInputTab();
-  if (tabId === 'manage' && isAdmin) renderAdminManageTab();
-  if (tabId === 'history') renderHistoryTab();
-}
+onValue(META_REF, (snapshot) => {
+  meta = normalizeMeta(snapshot.val());
+  if (meta.adminHash) adminHash = meta.adminHash;
+
+  const owner = getDeviceOwner();
+  const record = getCurrentDeviceRecord();
+  if (owner && record && record.revoked) {
+    forceLoggedOutByAdmin();
+  }
+
+  if (!currentUser && owner && db.users[owner] && record && !record.revoked && record.savedLogin) {
+    applyUserSession(owner);
+  }
+
+  if (isAdmin) renderDeviceManagementTab();
+}, (err) => {
+  console.error('Meta read error', err);
+});
 
 function showTab(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -784,9 +806,10 @@ function showTab(name, btn) {
   }
   if (name === 'public') { updatePublicMonthLabel(); renderPublicGroupOptions(); renderPublicCalendar(); }
   if (name === 'private') { renderPrivateUserOptions(); renderPrivateCalendar(); }
-  if (name === 'history') { renderHistoryTab(); }
+  if (name === 'history') renderHistoryTab();
   if (name === 'admin' && isAdmin) renderAdminInputTab();
   if (name === 'manage' && isAdmin) renderAdminManageTab();
+  if (name === 'devices' && isAdmin) renderDeviceManagementTab();
 }
 window.showTab = showTab;
 
@@ -807,10 +830,6 @@ function closeModeModal() {
   if (modal) modal.classList.remove('open');
 }
 
-function setupMaintenanceSecretTrigger() {}
-function setupTitleSecretTrigger() {}
-function updateMaintenanceOverlay() {}
-
 function toHalf(s) {
   return (s || '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).trim();
 }
@@ -824,9 +843,9 @@ async function tryAdminLogin() {
     document.getElementById('mode-badge').className = 'badge admin';
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
     closeModeModal();
-    updateMaintenanceOverlay();
     renderAdminInputTab();
     renderAdminManageTab();
+    renderDeviceManagementTab();
     return;
   }
 
@@ -837,9 +856,9 @@ async function tryAdminLogin() {
     document.getElementById('mode-badge').className = 'badge admin';
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
     closeModeModal();
-    updateMaintenanceOverlay();
     renderAdminInputTab();
     renderAdminManageTab();
+    renderDeviceManagementTab();
   } else {
     document.getElementById('mode-modal-msg').innerHTML = '<div class="alert alert-error">パスワードが違います。</div>';
   }
@@ -851,16 +870,14 @@ function logoutAdmin() {
   document.getElementById('mode-badge').className = 'badge';
   document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
   closeModeModal();
-  updateMaintenanceOverlay();
   showTab('input');
 }
 window.openModeModal = openModeModal;
 window.closeModeModal = closeModeModal;
 window.tryAdminLogin = tryAdminLogin;
 window.logoutAdmin = logoutAdmin;
-window.resetDeviceOwner = resetDeviceOwner;
 
-function loginUser() {
+async function loginUser() {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
   const msg = document.getElementById('login-msg');
@@ -869,14 +886,17 @@ function loginUser() {
   if (db.users[username].password !== password) { msg.innerHTML = '<div class="alert alert-error">パスワードが違います。</div>'; return; }
 
   setDeviceOwner(username);
+  await upsertDeviceRecord(username);
   applyUserSession(username);
   msg.innerHTML = '';
 }
 
 function logoutUser() {
   const owner = getDeviceOwner();
-  if (owner && db.users[owner]) {
+  const record = getCurrentDeviceRecord();
+  if (owner && db.users[owner] && record && !record.revoked && record.savedLogin) {
     applyUserSession(owner);
+    showAlert('この端末は ' + owner + ' の保存ログイン中です。', 'info');
     return;
   }
   currentUser = null;
@@ -889,6 +909,21 @@ function logoutUser() {
 }
 window.loginUser = loginUser;
 window.logoutUser = logoutUser;
+
+async function resetDeviceOwner() {
+  if (!confirm('この端末の保存ログインを解除しますか？')) return;
+  clearDeviceOwner();
+  await clearCurrentDeviceFromFirebase();
+  currentUser = null;
+  inputSelections = {};
+  selectedPrivateUser = '';
+  document.getElementById('login-card').style.display = 'block';
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  showAlert('この端末の保存ログインを解除しました。', 'success');
+}
+window.resetDeviceOwner = resetDeviceOwner;
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function toDateStr(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -1027,6 +1062,7 @@ function saveSchedule() {
   });
 
   saveData();
+  touchCurrentDevice();
   showAlert('保存しました！', 'success');
 }
 
@@ -1052,6 +1088,7 @@ function savePermissions() {
   const checked = [...document.querySelectorAll('#permission-list input[type="checkbox"]:checked')].map(el => el.value);
   db.permissions[currentUser] = checked;
   saveData();
+  touchCurrentDevice();
   showAlert('閲覧許可を保存しました！', 'success');
 }
 
@@ -1244,6 +1281,7 @@ function savePublicBooking() {
     createdAt: new Date().toISOString()
   });
   saveData();
+  touchCurrentDevice();
   clearPublicBookingForm();
   renderPublicCalendar();
   showAlert('予約を追加しました。', 'success');
@@ -1406,11 +1444,94 @@ function renderHistoryTab() {
 }
 
 function renderAdminInputTab() { }
-
 function renderAdminManageTab() {
   renderAdminUserList();
   renderAdminGroupList();
 }
+
+function formatDateTime(value) {
+  if (!value) return '未記録';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderDeviceManagementTab() {
+  const summaryEl = document.getElementById('device-summary-list');
+  const listEl = document.getElementById('device-list');
+  if (!summaryEl || !listEl) return;
+
+  const deviceEntries = Object.entries(meta.devices || {}).filter(([, record]) => record && record.username);
+  const grouped = {};
+  deviceEntries.forEach(([id, record]) => {
+    if (!grouped[record.username]) grouped[record.username] = [];
+    grouped[record.username].push({ id, ...record });
+  });
+
+  const users = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'ja'));
+  if (!users.length) {
+    summaryEl.innerHTML = '<p style="color:var(--muted);">保存ログイン端末はまだありません。</p>';
+    listEl.innerHTML = '<p style="color:var(--muted);">表示する端末情報がありません。</p>';
+    return;
+  }
+
+  summaryEl.innerHTML = users.map(username => {
+    const devices = grouped[username];
+    const activeCount = devices.filter(item => item.savedLogin && !item.revoked).length;
+    return `
+      <div class="device-card">
+        <div class="device-row">
+          <div>
+            <div style="font-weight:700;">${username}</div>
+            <div class="device-meta">保存端末 ${activeCount} 台 / 登録端末 ${devices.length} 台</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-danger btn-sm" onclick="revokeAllDevicesForUserUI('${username}')">このユーザーの全端末解除</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const sortedDevices = deviceEntries
+    .map(([id, record]) => ({ id, ...record }))
+    .sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''));
+
+  listEl.innerHTML = sortedDevices.map(item => `
+    <div class="device-card">
+      <div class="device-row">
+        <div>
+          <div style="font-weight:700;">${item.username}</div>
+          <div class="device-meta">端末ID: ${item.id}</div>
+        </div>
+        <span class="device-status ${item.savedLogin && !item.revoked ? 'active' : 'revoked'}">
+          ${item.savedLogin && !item.revoked ? '保存ログイン中' : '解除済み'}
+        </span>
+      </div>
+      <div class="device-meta">
+        最終利用: ${formatDateTime(item.lastSeen)}<br>
+        端末情報: ${(item.deviceLabel || 'unknown')}<br>
+        UA: ${(item.userAgent || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn btn-danger btn-sm" onclick="revokeDeviceUI('${item.id}')">この端末を解除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function revokeDeviceUI(targetDeviceId) {
+  if (!confirm('この端末の保存ログインを解除しますか？')) return;
+  await revokeDevice(targetDeviceId);
+  showAlert('端末の保存ログインを解除しました。', 'success');
+}
+async function revokeAllDevicesForUserUI(username) {
+  if (!confirm(username + ' の保存ログイン端末をすべて解除しますか？')) return;
+  await revokeAllDevicesForUser(username);
+  showAlert('全端末の保存ログインを解除しました。', 'success');
+}
+window.revokeDeviceUI = revokeDeviceUI;
+window.revokeAllDevicesForUserUI = revokeAllDevicesForUserUI;
 
 function addUser() {
   const nameInput = document.getElementById('admin-new-username');
@@ -1428,7 +1549,7 @@ function addUser() {
   renderAdminManageTab();
 }
 
-function deleteUser(name) {
+async function deleteUser(name) {
   if (!confirm(`"${name}" を削除しますか？`)) return;
   delete db.users[name];
   delete db.schedules[name];
@@ -1440,6 +1561,16 @@ function deleteUser(name) {
   Object.keys(db.bookings).forEach(groupId => {
     db.bookings[groupId] = (db.bookings[groupId] || []).filter(item => item.createdBy !== name);
   });
+
+  const updates = {};
+  Object.entries(meta.devices || {}).forEach(([id, record]) => {
+    if (record.username === name) {
+      updates[`devices/${id}/revoked`] = true;
+      updates[`devices/${id}/savedLogin`] = false;
+    }
+  });
+  if (Object.keys(updates).length) await update(META_REF, updates);
+
   if (getDeviceOwner() === name) clearDeviceOwner();
   if (currentUser === name) {
     currentUser = null;
@@ -1450,7 +1581,7 @@ function deleteUser(name) {
   renderAdminManageTab();
 }
 
-function changeUserName(username) {
+async function changeUserName(username) {
   const newName = prompt(`"${username}" の新しい名前を入力してください。`);
   if (!newName) return;
   const trimmed = newName.trim();
@@ -1483,6 +1614,12 @@ function changeUserName(username) {
     db.bookings[groupId] = (db.bookings[groupId] || []).map(item => item.createdBy === username ? { ...item, createdBy: trimmed } : item);
   });
 
+  const updates = {};
+  Object.entries(meta.devices || {}).forEach(([id, record]) => {
+    if (record.username === username) updates[`devices/${id}/username`] = trimmed;
+  });
+  if (Object.keys(updates).length) await update(META_REF, updates);
+
   if (currentUser === username) {
     currentUser = trimmed;
     const el = document.getElementById('current-username');
@@ -1493,6 +1630,7 @@ function changeUserName(username) {
 
   saveData();
   renderAdminManageTab();
+  if (isAdmin) renderDeviceManagementTab();
   alert('名前を変更しました。');
 }
 
@@ -1516,16 +1654,21 @@ function renderAdminUserList() {
   const users = Object.keys(db.users).sort((a,b) => a.localeCompare(b,'ja'));
   if (!users.length) { el.innerHTML = '<p style="color:var(--muted);">ユーザーがいません。</p>'; return; }
   const colors = ['#2563eb','#7c3aed','#16a34a','#dc2626','#d97706','#0891b2','#be185d','#65a30d'];
-  el.innerHTML = users.map((u, i) => `
+  el.innerHTML = users.map((u, i) => {
+    const userDevices = Object.values(meta.devices || {}).filter(record => record.username === u);
+    const activeDeviceCount = userDevices.filter(record => record.savedLogin && !record.revoked).length;
+    return `
     <div class="user-item" style="flex-wrap:wrap;align-items:center;">
       <div class="user-avatar" style="background:${colors[i%colors.length]}">${u[0].toUpperCase()}</div>
       <span class="user-name">${u}</span>
+      <span style="font-size:0.78rem;color:var(--muted);">端末 ${activeDeviceCount} 台</span>
       <span class="pw-text" id="pw-text-${u}" style="display:none;">${db.users[u].password || ''}</span>
       <button class="btn btn-secondary btn-sm" onclick="togglePasswordVisibility('${u}')">👁</button>
       <button class="btn btn-secondary btn-sm" onclick="changeUserName('${u}')">名前変更</button>
       <button class="btn btn-secondary btn-sm" onclick="changeUserPassword('${u}')">PW変更</button>
       <button class="btn btn-danger btn-sm" onclick="deleteUser('${u}')">削除</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function addGroup() {
@@ -1615,12 +1758,14 @@ function importData(event) {
   event.target.value = '';
 }
 
-function resetAll() {
+async function resetAll() {
   db = getDefaultData();
   saveData();
   clearDeviceOwner();
+  await update(META_REF, { devices: {} });
   logoutUser();
   renderAdminManageTab();
+  renderDeviceManagementTab();
   alert('全データをリセットしました。');
 }
 
@@ -1652,20 +1797,15 @@ window.resetAll = resetAll;
 async function initApp() {
   await ensureAdminHash();
   renderInputCalendar();
-  setupMaintenanceSecretTrigger();
-  setupTitleSecretTrigger();
-  updateMaintenanceOverlay();
   updatePublicMonthLabel();
+  renderHistoryTab();
 
   const owner = getDeviceOwner();
-  if (owner && db.users[owner]) {
+  const record = getCurrentDeviceRecord();
+  if (owner && db.users[owner] && record && !record.revoked && record.savedLogin) {
     applyUserSession(owner);
   }
-
-  window.openModeModal = openModeModal;
-  window.closeModeModal = closeModeModal;
-  window.tryAdminLogin = tryAdminLogin;
-  window.logoutAdmin = logoutAdmin;
+  touchCurrentDevice();
 }
 
 if (document.readyState === 'loading') {
